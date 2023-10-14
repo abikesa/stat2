@@ -1,0 +1,98 @@
+---
+title: "Lecture 6 in Biostatistics 651-652 at JHU Bloomberg School of Public Health"
+author: "Ciprian M. Crainiceanu"
+date: "Monday, August 08, 2016"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>. RStudio is the recommended software for using the document.  
+
+This document is used together with the Lectures notes for Lecture 6 in the Biostatistics 651-652 series. The idea is to learn how to produce reproducible Biostatistical documents where text, data, and results are interweaved. R is taught by reading and understanding these documents, but learning R requires much additional individual effort.
+
+*Calculating the likelihood of a Normal sample*
+
+Consider here $3$ observations ($5$, $2$, $3$) obtained from a Normal distribution with variance equal to $1$. We want to evaluate the likelihood at the parameter $\mu=4$. Recall that the Normal likelihood for the vector $x=(x_1,x_2,x_3)$ has the form
+$$L(\mu| x)\frac{1}{(2\pi)^{n/2}}\exp\left\{-\frac{\sum_{i=1}^3(x_i-\mu)^2}{2}\right\}$$
+
+```{r}
+mu=4                                          #Set the parameter where to evaluate the likelihood                                       
+bx=c(5,2,3)                                   #Set the observed data
+ebx2=-sum((bx-mu)^2)/2                        #Calculate the exponent
+like=exp(ebx2)/((2*pi)^(length(bx)/2))        #Calculate and print the likelihood
+round(like,digits=5)
+```
+
+Note that the values of the likelihood do not have an absolute interpretation, as the likelihood does not typically integrate to $1$. However, the relative size of the likelihood (aka likelihood ratio) for two different parameters has an important interpretation.  
+
+We now calculate the likelihood at a grid of possible parameters and plot it. This is essentially doing the same calculations as above, but at many more ($201$) possible parameter values
+
+```{r}
+mu=seq(0,6,length=201)                                    #Set a fine enough grid of parameters
+likep=rep(0,201)                                          #Initialize the vector containing the likelihood
+for (i in 1:201)
+  {#begin calculating the likelihood at each parameter
+   ebx2=-sum((bx-mu[i])^2)/2
+   likep[i]=exp(ebx2)/((2*pi)^(length(bx)/2))
+  }#end calculating the likelihood at each parameter
+plot(mu,likep,type="l",col="blue",lwd=3,xlab="Parameter",ylab="Likelihood")          
+mle<-mu[which.max(likep)]                                 #Obtain the maximum likelihood estimator
+round(mle,digits=3)
+```
+
+Note that the maximum likelihood estimator (MLE) obtained numerically is equal to the mean of the three observations $(5,2,3)$. This happens because the underlying distribution is the Normal distribution, though other distributions may have the average of the observations as the MLE. In general, the MLE need not be the average of the observations.
+
+
+*Uniform distribution likelihood*
+
+Assume now that $3$ observations ($5$, $2$, $3$) are obtained from a Uniform distribution on $[0,\theta]$ (denoted as $U[0,\theta]$). The pdf of the distribution is 
+$$f(x,\theta)=
+\left\{\begin{array}{ll} \frac{1}{\theta} &\mbox{if}\;\; 0\leq x\leq
+\theta\\
+0 & \mbox{otherwise}
+\end{array}\right.$$
+
+From Lecture 6 we know that the likelihood function is $L(\theta|x)=\frac{1}{\theta^3}I[\theta\geq 5]$, where $I[\cdot]$ is the indicator function and $5$ is the largest realization in the sample. Note that the domain of the likelihood (the interval where the likelihood is not zero) depends on the observation. This is quite different from the case of continuous distributions such as teh Normal or double exponential. Now let's plot the Uniform likelihood for this sample
+
+```{r}
+theta=seq(1,10,by=0.1)                                    #Set a grid for the likelihood
+like=1/theta^3*(theta>=5)                                 #Calculate the likelihood at every parameter value
+plot(theta,like,type="l",col="blue",lwd=3,xlab=expression(theta),ylab="Likelihood",cex.lab=1.5,cex.axis=1.5,col.axis="blue")
+```
+
+Note that the MLE is attained at $5$. The likelihood at every value of $\theta<5$ is zero because if the true $\theta$ were smaller than $5$ the the $U[0,\theta]$ could not have produced a $5$. The likelihood provides more information than just where the maximum is attained. Indeed, it provides information about how fast the likelihood (evidence) decreases away from the maximum
+
+```{r}
+round(like[theta==6]/like[theta==5],digits=3)            #Likelihood ratio for $\theta=6$ versus $\theta=5$
+round(like[theta==6]/like[theta==4],digits=3)            #Likelihood ratio for $\theta=6$ versus $\theta=4$
+theta[which.max(like)]                                   # maximum likelihood
+```
+
+In general, the likelihood is normalized relative to its maximum (attained at the MLE). This allows for an easier read of the relative evidence for the various parameters. Note the difference in the y-axis units between this and the previous plot.
+
+```{r}
+liken=like/max(like)
+plot(theta,liken,type="l",col="blue",lwd=3,xlab=expression(theta),ylab="Normalized likelihood",cex.lab=1.5,cex.axis=1.5,col.axis="blue")
+```
+
+*Profile likelihood*
+
+The profile likelihood is a very useful tool for visualization of the relative evidence contained in the likelihood for one of the parameters in cases when there are more than $1$ parameter. The idea is to fix all the other parameters (typically at their MLEs, but other values are also acceptable) and plot the likelihood only as a function of the remaining parameter. This is easier to visualize and intepret and provides information about the amount of information in the data about a specific parameter.
+
+Lecture 6 provides an example for the case of a random sample $x=(x_1,\ldots,x_n)$ from the $N(\mu,\sigma^2)$ distribution, which has two parameters, $\mu$ and $\sigma$. If $\sigma^2$ is replaced by its MLE $\widehat{\sigma}^2(x)=\sum_{i=1}^n(x_i-\bar{x}_n)^2/n$, where $\bar{x}_n$ is the average of the $n$ observations it can be shown that (minus twice) the profile log-likelihood has the form
+
+$$-2\log\{L(\mu|x)\}=-n\log\{\sum_{i=1}^n(x_i-\mu)^2\}+{\rm const},$$
+
+where the constant depends on the data, but does not depend on the parameter. We now calculate the profile log-likelihood, where the parameter $\sigma^2$ was "profiled out".
+
+```{r}
+bx=c(5,2,3)                                               #Data
+mu=seq(0,6,length=201)                                    #Grid of parameter values
+like_p=rep(0,201)                                         #Vector storing the profile log-likelihood
+for (i in 1:201)
+  {like_p[i]=-3*log(sum((bx-mu[i])^2))}                   #Calculate the profile log-likelihood
+plot(mu,like_p,type="l",col="blue",lwd=3,xlab=expression(mu),ylab="Profile log likelihood",cex.lab=1.5,cex.axis=1.5,col.axis="blue")
+mle<-mu[which.max(like_p)]
+round(mle,digits=3)
+```
+
+Note that the MLE for $\mu$ is the same whether or not $\sigma^2$ is known or estimated.

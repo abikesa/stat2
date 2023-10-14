@@ -1,0 +1,184 @@
+---
+title: "Lecture 4 in Biostatistics 651-652 at JHU Bloomberg School of Public Health"
+author: "Ciprian M. Crainiceanu"
+date: "Monday, August 08, 2016"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>. RStudio is the recommended software for using the document.  
+
+This document is used together with the Lectures notes for Lecture 5 in the Biostatistics 651-652 series. The idea is to learn how to produce reproducible Biostatistical documents where text, data, and results are interweaved. R is taught by reading and understanding these documents, but learning R requires much additional individual effort.
+
+Simulating independent discrete variables
+
+
+*Building a 3D plot of a distribution*
+
+Here we consider the bivariate pdf $$f(x,y)=ye^{-xy-y},$$ where $x\geq 0,y\geq 0$. 
+```{r}
+x=seq(0,4,length=40)                                        #Set an equally spaced grid between 0 and 4
+y=x                                                         #Do the same for y
+matxy=matrix(rep(0,1600),ncol=40)                           #Store the pdf values in a matrix                         
+for (i in 1:40)
+  {for (j in 1:40){matxy[i,j]=y[j]*exp(-x[i]*y[j]-y[j])}}   #Calculate and store the pdf at every location in the bivariate grid
+```  
+
+Recall that the bivariate pdf represents the concentration of probability for the bivariate random vector $(X,Y)$, which has this pdf. These variables are not independent because $f(x,y)\neq g(x)h(y)$ for any $g(\cdot)$ or $h(\cdot)$. That is, the bivariate pdf cannot be written as a product between a function that depends only on $x$ and a function that depends only on $y$.
+
+Plot the pdf as a $3$ dimensional function, where the $3$rd dimension is the value of the pdf at that location. There are other approaches for plotting these including heat maps and contours. We will learn all these approaches.
+
+```{r}
+persp(x, y, matxy, theta = 30, phi = 30, col = c("green3"),ltheta = 120, shade = 0.9, expand="0.75",zlab="f(x,y)", ticktype = "detailed",border=NA)
+```
+
+Now produce a heat map using the `R` package `fields`. Simpler approaches could be used, but I prefer to have the color bar attached to the plot. You may want to try the functions `plot3D`, and `surface3d` as well as the `R` packages `rgl` and `fields`. 
+
+```{r,message=FALSE,warning=FALSE}
+library(fields)
+image.plot(x,y,matxy)
+```
+
+
+Calculate the sensitivity and specificity and plot the receiver operating characteristic (ROC) curve. Area under the curve (AUC) is the area under the ROC and is the *probability that the model will assign a higher probability of an event to the subject who will experience the event than to the one who will not experience the event.* Consider a simulated example and we will show how to obtain the ROC as well as the bootstrap distribution of ROCs.
+
+We simulate outcomes from the model $y\sim N(\mu_x,2)$, where $\mu_x=1+1.5x$
+
+```{r}
+n.obs=500                                                   #Set the number of observations
+x=seq(0,2,length=n.obs)                                     #Set the predictors
+eps=rnorm(n.obs)                                            #Simulate N(0,1) random variables
+y=1+1.5*x+2*eps                                             #Simulate outcomes
+```
+
+Display the simulated data together with the linear regression, confidence and prediction intervals. You have learned none of that yet, but you will. So, following the code will, at least provide a good place to start. Results make a lot of sense.
+
+```{r}
+tmp <- data.frame(x, y)                                          #Setting up the data frame
+tmp.lm <- lm(y ~ x, data=tmp)                                    #This is linear regression of y on x
+preds=predict(tmp.lm,data=tmp,se=TRUE)                           #Obtain the predicted values at x
+ff=preds$fit                                                     #Store predicted values in ff
+ff_low=preds$fit-1.96*preds$se.fit                               #Obtain the 95\% lower bound for ff
+ff_high=preds$fit+1.96*preds$se.fit                              #Obtain the 95\% upper bound on ff
+
+ff_p_low=preds$fit-1.96*sqrt(preds$se.fit^2+preds$residual.scale^2)  #Obtain the 95% lower bound on predicting a new observation
+ff_p_high=preds$fit+1.96*sqrt(preds$se.fit^2+preds$residual.scale^2) #Obtain the 95% upper bound on predicting a new observation
+```
+
+Now plot the results from the linear regression and consider what every line represents in the plot. Note that with more data the variability of the linear predictor will decrease to zero, whereas the variability of predicting a new observation is governed by the variability of observations around their true mean
+
+```{r}
+#Plot the (x,y) pair as dots. Below various plotting options are used
+plot(x,y,pch=19,col="darkgreen",xlab="Predictor",ylab="Outcome",ylim=c(min(y),max(y)),axes=FALSE)
+axis(1, at=seq(0,2,length=5),labels=seq(0,2,length=5))          #This sets the x-axis and its labels; can be customized 
+axis(2,at=c(-8,-4,0,4,8))                                       #Same for axis y         
+
+lines(x,ff,lty=3,lwd=4,col="red")                               #Add the regression line
+
+lines(x,ff_low,lty=3,lwd=4,col="magenta")                       #Add the CI for the regression line
+lines(x,ff_high,lty=3,lwd=4,col="magenta")
+
+lines(x,ff_p_low,lty=3,lwd=4,col="orange")                      #Add the prediction interval for new observations
+lines(x,ff_p_high,lty=3,lwd=4,col="orange")
+```
+
+
+Calculating the sensitivity, specificity, positive predictive, and negative predictive curves. Understanding this calculation would be very useful in the bigger picture of learning about ROC and AUCs. Here we define $y>4$ as a true case and $x>T$, for a grid of thresholds as a predicted case.
+
+```{r}
+thresh=seq(0,2,length=100)                                      #Set the range of thresholds as the range of x
+sensy=rep(NA,100)                                               #Sensitivity will be calculate at each such threshold
+specy=sensy                                                     #Same for specificity, positive and negative predictive curves
+ppv=sensy
+npv=sensy
+for (i in 1:length(thresh))
+  {#begin iterating over thresholds
+	T=thresh[i]
+	red.points=(x>T) & (y>4)                                      #True positives
+	green.points=(x>T) & (y<=4)                                   #False positives
+	orange.points=(x<=T) & (y>4)                                  #False negatives
+	black.points=(x<=T) & (y<=4)                                  #True negatives
+
+	sensy[i]=sum(red.points)/(sum(red.points)+sum(orange.points))      #Sensitivity at threshold T
+	specy[i]=sum(black.points)/(sum(black.points)+sum(green.points))   #Specificity at threshold T
+
+	ppv[i]=sum(red.points)/(sum(red.points)+sum(green.points))         #Positive predicted value at threshold T
+	npv[i]=sum(black.points)/(sum(black.points)+sum(orange.points))    #Negative predicted value at threshold T
+ }#end iterating over thresholds
+```
+
+Plot the sensitivity and specificity as functions of the decision threshold (blue is sensitivity and red is specificity).
+
+```{r}
+plot(thresh,sensy,type="l",lwd=3,col="blue",xlab="Threshold",ylab="Probability",ylim=c(0,1),xlim=c(min(x),max(x)),axes=FALSE)
+axis(1, at=seq(0,2,length=5),labels=seq(0,2,length=5))
+axis(2,at=c(0,0.2,0.4,0.6,0.8,1))
+lines(thresh,specy,lty=1,lwd=3,col="red")
+```
+
+Plot the ROC curve. Note that this is 1 minus specificity versus sensitivity
+```{r}
+plot(1-specy,sensy,xlab="1-Specificity",ylab="Sensitivity",type="l",lwd=3,col="red",axes=FALSE)
+lines(c(0,1),c(0,1),lwd=3)
+axis(1,at=seq(0,1,length=5))
+axis(2,at=seq(0,1,length=5))
+```
+
+We now simulate $100$ different data sets from the same model with a number of observations equal to $500$ and obtain the ROC and AUC for each simulated data set. We then plot the resulting distributions. It is important to understand that both AUC and ROC are statistics and have statistical variability. This variability depends on the sample size as well as on the probability of an event.
+
+Start by setting up the matrices and vectors that will collect the data for each measure of interest. Because we simulate $100$ different data sets from the same model the sensitivity, specificity, negative and positive predictive functions will be $100 \times 100$ dimensional matrices, where each row corresponds to a data set and each column corresponds toa threshold.
+
+```{r}
+sensy=matrix(rep(NA,10000),nrow=100)                         #Sensitivity is a 100 by 100 matrix
+specy=sensy
+ppv=sensy
+npv=sensy
+auc=rep(NA,100)
+```
+
+Simulate $100$ data sets from the same model and calculate the various functions of interest at every threshold. Below we conduct simulations using the model. Try to do the same thing using nonparametric bootstrap of pairs $(x_i,y_i)$ and compare results with those obtained by simulation from the model.
+
+```{r}
+for (k in 1:100)
+  {#begin simulating data sets, k is the data set index
+  eps=rnorm(n.obs)                                    #simulate a new set of residuals
+	y=1+1.5*x+2*eps                                     #simulate outcomes
+	for (i in 1:length(thresh))                         #for every threshold, in idexes the threshold
+	{#begin calculating relevant functions for every threshold
+	T=thresh[i]                                         #Set the range of thresholds as the range of x
+	red.points=(x>T) & (y>4)                            #True positives                           
+	green.points=(x>T) & (y<=4)                         #False positives
+	orange.points=(x<=T) & (y>4)                        #False negatives
+	black.points=(x<=T) & (y<=4)                        #True negatives
+
+	sensy[k,i]=sum(red.points)/(sum(red.points)+sum(orange.points))      #Sensitivity
+	specy[k,i]=sum(black.points)/(sum(black.points)+sum(green.points))   #Specificity
+
+	ppv[k,i]=sum(red.points)/(sum(red.points)+sum(green.points))         #PPV
+	npv[k,i]=sum(black.points)/(sum(black.points)+sum(orange.points))    #NPV
+	}
+
+  #Calculate AUC, which is the integral of the ROC
+	ll=1-specy[k,]                                                       #These are the x's of the curve
+	uu=ll[1:99]-ll[2:100]                                                #Distance between specificity values
+	                                                                     #Average between two neighboring sensitivity values
+	vv=(sensy[k,2:100]+sensy[k,1:99])/2                                  #Approximate AUC using trapezoidal approximation
+	auc[k]=sum(uu*vv)                                                    #Estimate AUC for the kth data set
+}
+```
+
+Plot all ROC curves to understand the variability of ROCs and the source of unecrtainty in AUCs.
+
+```{r}
+plot(1-specy[1,],sensy[1,],xlab="1-Specificity",ylab="Sensitivity",type="l",lty=2,lwd=2,col="red",axes=FALSE)
+lines(c(0,1),c(0,1),lwd=3)
+axis(1,at=seq(0,1,length=5))
+axis(2,at=seq(0,1,length=5))
+for (i in 2:20)
+  {lines(1-specy[i,],sensy[i,],lty=2,lwd=2,col="red")}
+```
+
+Plot the distribution of AUCs for the $500$ simulated data sets
+
+```{r}
+hist(auc,probability=T,col=rgb(0,0,1,1/4),breaks=20,xlab="AUC",cex.lab=1.5,cex.axis=1.5,col.axis="blue")
+```

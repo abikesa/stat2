@@ -1,0 +1,245 @@
+\documentclass[12pt]{article}
+\usepackage{geometry,amsmath,amssymb, graphicx, natbib, float, enumerate}
+\geometry{margin=1in}
+\renewcommand{\familydefault}{cmss}
+\restylefloat{table}
+\restylefloat{figure}
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\logit}{\mathrm{logit}}
+\newcommand{\RQ}{[{\bf REQUIRED}]~}
+
+\begin{document}
+\noindent
+{\bf BST 140.652 \\ Problem Set 6} \\
+
+\begin{enumerate}[Problem 1.]
+\item Consider the hypothesis testing problem of comparing two
+  binomial probabilities $H_0: p_1 = p_2$.  Show that the square of
+  statistic $(\hat{p}_1 - \hat{p}_2)/{\rm SE}_{\hat{p}_1 - \hat{p}_2}$
+  is the same as the $\chi^2$ statistic. Here, the standard error in
+  the denominator is calculated under the null hypothesis. (Clearly
+  define any notation you introduce.)
+\item A study of the effectiveness of {\sl streptokinase} in the
+  treatment of patients who have been hospitalized after myocardial
+  infarction involves a treated and control group.  In the
+  streptokinase group, 20 of 150 patients died within 12 months.  In the
+  control group, 40 of 190 died with 12 months.
+  \begin{enumerate}[a.]
+  \item Test equivalence of the two proportions.
+  \item Give confidence intervals for the absolute change in proportions, the relative risk and odds ratio.  
+  \item Create Bayesian credible intervals for the risk difference,
+    risk ratio and odds ratio. Plot the posterior for each and
+    interpret the results.
+  \end{enumerate}
+\item Researchers are interested in estimating the natural log of the
+  proportion of people in the population with hypertension. In a
+  random sample of $n$ subjects, let $X$ be the number with
+  hypertension. Derive a confidence interval for the natural log of the
+  proportion of people with hypertension. Assume that $n$ is
+  large. 
+\item This problem considers the delta method.
+  \begin{enumerate}[a.]
+  \item Derive the asymptotic standard error for $\sqrt{\hat p}$
+    where $\hat p$ is a binomial sample proportion.
+  \item Assume that $n = 200$ and $p = .5$. Implement a simulation
+    study to verify that the delta method results in approximately
+    normally distributed variables.
+  \end{enumerate}
+\item In this homework, we will evaluate the performance of the log
+  odds ratio interval estimate
+  $$
+  \log \hat{OR} \pm 1.96 \sqrt{1/n_{11} + 1/n_{12} + 1 / n_{21} + 1 / n_{22}}.
+  $$
+  Use R to generate $1,000$ random binomials with \texttt{n1} trials
+  and \texttt{p1} success probability; call this vector \texttt{x}.
+  Use R to generate $1,000$ random binomials with \texttt{n2} trials
+  and \texttt{p2} success probability; call this vector \texttt{y}.
+  Squash these to vectors together with the command \texttt{z =
+    cbind(x, y)}. Now, create $1,000$ sample odds ratios with the
+  command
+\begin{verbatim}
+OR = apply(z, 1, 
+           function(x) x[1] * (n2 - x[2]) / (x[2] * (n1 - x[1]))
+          )
+\end{verbatim}
+  Log these odds ratios to obtain $1,000$ sample log odds ratios. Now
+  obtain $1,000$ standard errors with the command
+\begin{verbatim}
+SELOGOR = apply(z, 1, 
+           function(x) sqrt(1 / x[1] + 1 / (n1 - x[1]) + 
+                            1 / x[2] + 1 / (n2 - x[2])
+                           )
+          )
+\end{verbatim}
+  Now, see how often the interval for the log odds ratio contains the
+  true log odds ratio.  Repeat this process for all of the following
+  combinations
+\begin{verbatim}
+p1 = .1; p2 = .1; n1 = 100; n2 = 100
+p1 = .1; p2 = .5; n1 = 100; n2 = 100
+p1 = .1; p2 = .9; n1 = 100; n2 = 100
+p1 = .5; p2 = .5; n1 = 100; n2 = 100
+p1 = .5; p2 = .9; n1 = 100; n2 = 100
+p1 = .9; p2 = .9; n1 = 100; n2 = 100
+\end{verbatim}
+  Summarize your findings. 
+\item In this homework, we will also evaluate the performance of the log
+  relative risk interval estimate
+  $$
+  \log \hat{RR} \pm 1.96 \sqrt{\hat (1 - \hat p_1) / (\hat p_1 n_1) + (1 - \hat p_2) / (\hat p_2 n_2)} 
+  $$
+  Use R to generate $1,000$ random binomials with \texttt{n1} trials
+  and \texttt{p1} success probability; call this vector \texttt{x}.
+  Use R to generate $1,000$ random binomials with \texttt{n2} trials
+  and \texttt{p2} success probability; call this vector \texttt{y}.
+  Squash these to vectors together with the command \texttt{z =
+    cbind(x, y)}.  Now, create $1,000$ sample risk ratios with the
+  command
+\begin{verbatim}
+RR = apply(z, 1, 
+           function(x) (x[1] / n1) / (x[2] / n2)
+          )
+\end{verbatim}
+  Log these risk ratios to obtain $1,000$ sample log risk ratios. Now
+  obtain $1,000$ standard errors with the command
+\begin{verbatim}
+SELOGRR = apply(z, 1, 
+             function(x) {
+                phat1 <- x[1] / n1
+                phat2 <- x[2] / n2
+                sqrt((1 - phat1) / phat1 / n1 + (1 - phat2) / phat2 / n2)
+             }
+          )
+\end{verbatim}
+  Now, see how often the interval for the log relative risk contains the
+  true log relative risk. Repeat this process for the following combinations
+\begin{verbatim}
+p1 = .1; p2 = .1; n1 = 100; n2 = 100
+p1 = .1; p2 = .5; n1 = 100; n2 = 100
+p1 = .1; p2 = .9; n1 = 100; n2 = 100
+p1 = .5; p2 = .5; n1 = 100; n2 = 100
+p1 = .5; p2 = .9; n1 = 100; n2 = 100
+p1 = .9; p2 = .9; n1 = 100; n2 = 100
+\end{verbatim}
+Summarize your findings.
+% \item Download the class simulation data set ``task1.csv'' from the course
+%   web site. Here's the commands that I used to read it in 
+% \begin{verbatim}
+% dat <- read.csv("task1.csv", header = FALSE)
+% dat2 <- dat[,1 : 10]
+% dat2 <- dat2[complete.cases(dat2),]
+% vec1 <- as.vector(unlist(dat2))
+% \end{verbatim}
+%   Dat is the orginal data. Dat2 contains only the data, removing any
+%   subjects containing errors. Vec1 is the data disregarding subject
+%   level information.
+%   \begin{enumerate}[a.]
+%   \item Do the numbers 1-10 appear to be equally likely? Perform
+%     the appropriate Chi-squared test.
+%   \item Approximate an exact Chi-squared test by doing the following.
+%     Simulate 1,000 random nultinomials under the null hypothesis with
+%     the command
+% \begin{verbatim}
+% simdat <- t(rmultinom(1000, size = length(vec1), p = rep(.1, 10)))
+% \end{verbatim}
+%     Obtain the chi-squared statistics for each with the command
+% \begin{verbatim}
+% chsqStats <- apply(simdat, 1, function(x) chisq.test(x)$statistic)
+% \end{verbatim}
+%     Calculate the percentage of time that these statistics are greater
+%     than the observed statistic. Explain how, provided the Monte Carlo
+%     sample is large, this is a P-value.  
+% \end{enumerate}
+\item The following data show the results of caries surveys in five towns
+and also the fluoride content of the drinking water.
+\begin{center}
+\begin{tabular}{lcccccc}
+\hline
+& Surrey & & & & West & \\
+Area & and Essex & Slough & Harwick & Burnham & Meresa & Total \\
+Fluoride p.p.m.\ & 0.15 & 0.9 & 2.0 & 3.5 & 5.8 & \vspace{+0.05in} \\ \hline
+Number children with &&&&&& \\
+with caries & 243 & 83 & 60 & 31 & 39 & 456 \vspace{+0.10in} \\
+Number children with &&&&&& \\
+caries free teeth & 16 & 36 & 32 & 31 & 12 & 127 \vspace{+0.10in} \\
+Number examined & 259 & 119 & 92 & 62 & 51 & 583 \\ \hline
+\end{tabular}
+\end{center}
+The data refer to samples of children aged 12-14 only.  
+\begin{enumerate}[a.]
+\item Estimate the odds ratio for the propobability of caries for lowest and highest (.15 to 5.8)
+  categories of flouride. Interpret these results.
+\item Estimate the relative risk for the propobability of caries for lowest and highest (.15 to 5.8)
+  categories of flouride. Interpret these results.
+\item Estimate the risk difference for the propobability of caries for lowest and highest (.15 to 5.8)
+  categories of flouride. Interpret these results.
+\item Test the equivalence for the probability of caries between the lowest and highest flouride concentrations (.15 to 5.8)
+  give a P-value and interpret your results.
+\end{enumerate}
+\item A case-control study of esophageal cancer was performed.  Daily alcohol
+consumption was ascertained $(80 +$ gm $=$ high, $0-79$ gm $=$ low). The data
+was stratified by 3 age groups.
+\begin{center}
+\begin{tabular}{lllclllclll}
+& \multicolumn{2}{c}{Alcohol} &&& \multicolumn{2}{c}{Alcohol} 
+&& &\multicolumn{2}{c}{Alcohol} \\
+& H & L & && H & L &&& H & L \\
+case & 8 & 5 && case & 25 & 21& & case & 50 & 61 \\ 
+control & 52 & 164 && control & 29 & 138& & control & 27 & 208 \vspace{+0.25in} \\
+& \multicolumn{2}{c}{Age 35-44} &&& \multicolumn{2}{c}{Age 45-54}
+&&& \multicolumn{2}{c}{Age 55-64}
+\end{tabular} 
+\end{center}
+Give a confidence interval estimate of the odds ratio in the Oldest age group.
+\item  In a study of aquaporins, 120 frog eggs were randomized, 60 to
+  receive a protein treatment and 60 controls. If the treatment of
+  the protein is effective, the frog eggs would implode. The resulting
+  data was
+    \begin{center}
+      \begin{tabular}{cccc}
+              & Imploded & Did not & Total \\
+      Treated & 50        & 10       & 60     \\
+      Control & 20        & 40       & 60     \\
+      Totals  & 70        & 50       & 120    \\       
+      \end{tabular}
+    \end{center}
+    State the appropriate hypotheses and report and interpret a
+    P-value. 
+\item Let $\hat p$ be the sample proportion from a binomial experiment
+with $n$ trials.  Recall that the standard error of $\hat p$ is
+$\sqrt{\hat p (1 - \hat p) / n}$. Define $f(\hat p) = \log\{\hat p /
+(1 - \hat p)\}$ as the sample log odds.  Note, the following
+  fact might be useful:
+$$
+f'(x) = \frac{1}{x(1 - x)}
+$$
+Use the delta method to create a confidence interval
+  for the sample log odds.
+\item Refer to the previous problem. Let $\hat p_1$ be the sample proportion from
+  one binomial experiment with $n_1$ trials and $\hat p_2$ be the
+  sample proportion from a second with $n_2$ trials. Define the log
+  odds ratio to be $f(\hat p_1) - f(\hat p_2)$. Use your answer to
+  part 2 to derive a confidence interval for the log odds ratio.
+\item Two drugs, $A$ and $B$ , are being investigated in a randomized
+  trial with the data are given below.  Investigators would like to
+  know if the Drug A has a greater probability of side effects than
+  drug B.
+  \begin{center}
+    \begin{tabular}{|c|c|c|c|} \hline
+             & None & Side effects  & $N$ \\\hline 
+      Drug A &  10  &   30    & 40 \\ 
+      Drug B &  30  &   10    & 40 \\ \hline
+    \end{tabular}
+  \end{center}
+  \begin{enumerate}[a.]
+  \item State relevant null and alternative hypotheses and perform the relevant test.
+  \item Estimate a confidence interval for the odds ratio, relative risk and risk difference. Interpret these reslts.
+  \end{enumerate}
+\item You are flipping a coin and would like to test if it is fair. You flip it 
+10 times and get 8 heads. Specify relevant hypotheses and report and interpret an exact P-value.
+\end{enumerate}
+
+
+\end{document}

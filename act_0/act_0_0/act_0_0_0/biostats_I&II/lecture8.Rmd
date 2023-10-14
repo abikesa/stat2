@@ -1,0 +1,128 @@
+---
+title: "Lecture 8 in Biostatistics 651-652 at JHU Bloomberg School of Public Health"
+author: "Ciprian M. Crainiceanu"
+date: "Monday, August 08, 2016"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>. RStudio is the recommended software for using the document.  
+
+This document is used together with the Lectures notes for Lecture 8 in the Biostatistics 651-652 series. The idea is to learn how to produce reproducible Biostatistical documents where text, data, and results are interweaved. R is taught by reading and understanding these documents, but learning R requires much additional individual effort.
+
+*(Weak) Law of Large Numbers*
+
+The (Weak) Law of Large Numbers (WLLN) establishes that if $X_1,X_2,\ldots$ are iid random variables from a population with mean $\mu$ and variance $\sigma^2$ then the empirical average $\bar{X}_n$ converges to $\mu$ in probability. The (Strong) Law of Large Numbers (SLLN) establishes that $\bar{X}_n$ converges to $\mu$ almost surely under slightly stronger assumptions. 
+
+Mathematically, $\bar{X}_n\rightarrow\mu$ in probability if and only if for every $\epsilon>0$ 
+$$\lim_{n\rightarrow\infty}P(|\bar{X}_n-\mu|<\epsilon)=1.$$
+
+It is important to see what happens in a few examples. We generate Bernoulli random variables and calculate the averages $\bar{X}_n$ for various values of $n$. We do this $3$ times to illustrate that the $\bar{X}_n$ is a series of random variables, that convergence in probability is different from mathematical convergence of number series, and that convergence in probability is a necessary concept. One could think of the three experiments simulated below as $3$ different experiments run in $3$ different labs. We do not expect that the labs will get the same results in the same order, but we do expect that something is reproducible; in this case the average success rate.
+
+```{r}
+x1=rbinom(100,1,0.5)                                    #Generate the first 100 independent Bernoulli(1,0.5)
+x2=rbinom(100,1,0.5)                                    #Generate the second 100 independent Bernoulli(1,0.5)
+x3=rbinom(100,1,0.5)                                    #Generate the third 100 independent Bernoulli(1,0.5)
+xbar1=rep(0,length(x1))                                 #Store the sequential means for experiment 1
+xbar2=xbar1                                             #Store the sequential means for experiments 2 and 3
+xbar3=xbar1
+for (i in 1:length(x1))
+  {xbar1[i]=mean(x1[1:i])                               #Calculate the sequential means
+	 xbar2[i]=mean(x2[1:i])
+	 xbar3[i]=mean(x3[1:i])}
+
+plot(1:100,xbar1-0.5,type="l",col="blue",lwd=3,xlab="Number of trials",ylab="Distance to the mean",cex.lab=1.5,cex.axis=1.5,col.axis="blue",ylim=c(-0.5,0.5))
+lines(1:100,xbar2-0.5,col="red",lwd=3)
+lines(1:100,xbar3-0.5,col="orange",lwd=3)
+lines(1:100,rep(0,100),lwd=3)
+```
+
+Note that the three means can start relatively far apart, but they seem to converge towards $0.5$ (in our plot we show the distance to $0.5$). The results from the three "labs" will not be exactly the same, with differences governed by the laws of probability. The same type of behavior can be observed for any other variables with finite second moments, though convergence rates depend on the shape of the distribution with lower convergence rates for heavy tailed and skewed distribution.
+
+*Convergence in distribution*
+
+If $X_1,X_2,\ldots$ are iid random variables we say that $X_n$ converges in distribution (or weakly) to $X$ if the cdf of $X_n$ converges to the cdf of $X$. More precisely,
+
+$$P(X_n\leq x)=F_{X_n}(x)\underset{n}{\rightarrow} F(x)=P(X\leq x).$$
+
+This type of convergence is extremely useful when one is interested in approximating the probability of certain events. If we know the distribution of $X$ and we know that $X_n\underset{n}{\rightarrow} X$ in distribution then we can use the limit random variable distribution $F_X$ to approximate the typically harder to evaluate distribution of the observed random variable distribution $F_{X_n}$. A famous example that is used extensively in practice is the **Central Limit Theorem (CLT)**, but other approximations can and are used. 
+
+*Central Limit Theorem*
+
+Given $X_1,X_2,\ldots$ a sequence of iid random variables with mean $\mu$ and variance $\sigma^2$ then 
+
+$$\lim_{n\rightarrow\infty}P\left(\frac{\bar{X}_n-\mu}{\sigma/\sqrt{n}}\leq z\right)=\Phi(z)$$
+
+for every real $z$, where $\Phi(z)$ is the cdf of a $N(0,1)$ distribution. This approximation s called teh Central Limit Theorem (CLT) and it is often used to approximate the distribution of $\bar{X}_n$ when the number of samples, $n$, is relatively large and the distribution of $\bar{X}_n$ is complicated.
+
+The random variable $Z_n=\frac{\bar{X}_n-\mu}{\sigma/\sqrt{n}}$ is a transformation of the sample average $\bar{X}_n$ that has mean zero (centered) and variance one (standardized). This type of transformation is widely spread in science to transform measurements to the same scale (note that $Z_n$ is unitless) where they can be compared. The transformation is sometimes referred to as z-scoring. 
+
+The CLT essentially says that, as $n$ increases, the distribution of the z-score $Z_n$ becomes indistinguishable from the $N(0,1)$ distribution. This can be used to construct confidence intervals for the true mean of the distribution.
+
+We conduct some simulations in `R` to provide a better idea about exactly what CLT is all about. Consider an independent random sample $X_1,X_2,\ldots$ from an $\exp(1)$ distribution. As discussed in Lecture 8, teh mean of this distribution is $\mu=1$ and the variance is also $\sigma^2=1$. Thus the standardized mean is $Z_n=(\bar{X}_n-1)/(1/sqrt{n})=\sqrt{n}(\bar{X}_n-1)$.
+
+```{r}
+xh=seq(0,5,length=101)                                      #Set a grid to evaluate the exp(1) distribution
+he=dexp(xh,rate=1)                                          #Evaluate the pdf of the exp(1) distribution 
+
+n=c(3,30)                                                   #Simulate for $n=3$ and $n=30$
+mx=matrix(rep(0,2000),ncol=2)                               #Matrix for storing the 1000 simulations for each n
+for (i in 1:1000)
+    {#begin simulations
+    mx[i,1]=mean(rexp(n[1], rate = 1))                      #Calculate the mean of 3 independent exp(1) 
+    mx[i,2]=mean(rexp(n[2], rate = 1))                      #Calculate the mean of 30 independent exp(1)
+    }#end simulations
+plot(xh,he,type="l",col="blue",lwd=3,ylim=c(0,2.5),xlab="Survival time",ylab="Density")
+hist(mx[,1],prob=T,add=T,col=rgb(0,0,1,1/4),breaks=25)
+hist(mx[,2],prob=T,add=T,col=rgb(1,0,0,1/4),breaks=25)
+```
+
+Note that the distribution of the mean looks closer to being bell-shaped than the shape of the original distribution (shown as blue line). However, the mean is neither centered at $1$ nor does it have variance equal to $1$. Also, note that we have used transparent colors to overplot histograms and `add=T` to add current plot to existent plots. Below we show the distribution of the z-scores
+
+```{r}
+xx=seq(-3,3,length=101)                                     #Set a grid to evaluate the N(0,1) distribution
+yx=dnorm(xx)                                                #Evaluate the pdf of the N(0,1) distribution
+
+zx=mx                                                       #Matrix to store the z-scores
+for (j in 1:2)
+    {zx[,j]<-sqrt(n[j])*(mx[,j]-1)}                         #Calculate the z-scores for the means
+
+plot(xx,yx,type="l",col="blue",lwd=3,ylim=c(0,0.5),xlab="Survival time",ylab="Density")
+hist(zx[,1],prob=T,add=T,col=rgb(0,0,1,1/4),breaks=50)
+hist(zx[,2],prob=T,add=T,col=rgb(1,0,0,1/4),breaks=50)
+```
+
+We now show the CLT for coin flipping using different types of coins and number of flips. Assume that we have $n$ independent ${\rm Bernoulli}(p)$ trials $X_1,\ldots,X_n$. According to lecture 8 the estimated probability of success $\widehat{p}_n=\bar{X}_n$ can take values $0/n,1/n,\ldots,n/n$ and 
+$$P\left(\widehat{p}_n=\frac{k}{n}\right)={n\choose k}p^k(1-p)^{n-k}.$$
+Since $E[\widehat{p}_n]=p$ and ${\rm Var}[\widehat{p}_n]=\frac{p(1-p)}{n}$ it follows that the z-score for $\widehat{p}_n$ is
+$$Z_n=\frac{\widehat{p}_n-p}{\sqrt{p(1-p)/n}}=\frac{\sqrt{n}(\widehat{p}_n-p)}{\sqrt{p(1-p)}}$$
+From this formula it is easy to see that $Z_n$ takes the values $\frac{\sqrt{n}(k/n-p)}{\sqrt{p(1-p)}}$ with probability ${n\choose k}p^k(1-p)^{n-k}$. Note how the values taken by the random variable $Z_n$ cover the entire real line as $n\rightarrow\infty$. The CLT result indicates that the discrete distribution of $Z_n$ is well approximated by the $N(0,1)$ distribution.
+
+Show the approximations for various values of $n$ and $p$. Note how fast the Normal approximation provides a good approximation to the distribution of $Z_n$.
+
+```{r}
+nv=c(5,10,20,50)                                                 #Set the value of the number of samples
+par(mfrow = c(2, 2),mai = c(0.4, 0.7, 0.2, 0.2))                #Declare that we need for panels for plotting
+xx=seq(-3,3,length=101)                                          #Set the grid 
+yx=dnorm(xx)
+
+for (l in 1:length(nv))
+    {#begin loop over sample sizes
+    n=nv[l]                                                      #Set the value of the sample size
+    plot(xx,yx,type="l",col="blue",lwd=3,xlab="Z-score",ylab=paste("n=",n),cex.lab=1.5,cex.axis=1.5,col.axis="blue",ylim=c(0,0.45))
+
+
+    k=0:n                                                        #Set the values that can be taken by the sum of independent Bernoullis
+    p=c(0.5,0.3,0.1)                                             #Set the probability vector where the z-score is calculated
+    values=matrix(rep(0,(n+1)*3),ncol=3)                         #Set the matrix of possible values that can be taken by the z-scores 
+    pr=values                                                    #Set the matrix of probabilities for the values taken by the z-scores
+    for (i in 1:length(p))
+	      {#begin looping over probabilities
+         values[,i]=sqrt(n)*(k/n-p[i])/sqrt(p[i]*(1-p[i]))       #Calculate the z-store values
+	       pr[,i]=dbinom(k,n,prob=p[i])/(values[2,i]-values[1,i])  #Calculate the z-score probabilities
+        }#end looping over probabilities
+
+lines(values[,1],pr[,1],lwd=3,col="red")
+lines(values[,2],pr[,2],lwd=3,col="orange")
+lines(values[,3],pr[,3],lwd=3,col="violet")
+    }#end loop over sample sizes
+```

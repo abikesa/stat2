@@ -1,0 +1,252 @@
+---
+title: "Lecture 2 in Biostatistics 651-652 at JHU Bloomberg School of Public Health"
+author: "Ciprian M. Crainiceanu"
+date: "Monday, August 08, 2016"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>. RStudio is the recommended software for using the document.  
+
+This document is used together with the Lectures notes for Lecture 2 in the Biostatistics 651-652 series. The idea is to learn how to produce reproducible Biostatistical documents where text, data, and results are interweaved. R is taught by reading and understanding these documents, but learning R requires much additional individual effort.
+
+
+We start with the birthday problem and we calculate the probability of having at least two people with the same birthday in a room with $i$ people. Note that the probability for having two birthdays in a room with more than $365$ people is $1$. Thus, we calculate the probability only for rooms with fewer than $n<365$ people.
+```{r}
+n=1:364                       #This is the vector of number of people in the room
+pn=n                          #Build the vector that will contain the probabilities
+for (i in 1:364)
+    {pn[i]<- 1-prod(365:(365-i+1))/365^i}  #Calculate the probability of at least two people with the same birthday
+```
+
+Show some results
+```{r}
+round(pn[c(23,57)],digits=3)
+```
+
+Plot the probability of having at least two people with the same birthday as a function of group size. We will also learn some details about plotting. Note the various options that are used to make the plot look better. You may want to play with the various options to understand the effects on the final plot.
+```{r}
+plot(n[1:100],pn[1:100],type="p",pch=19,col="blue",lwd=3,xlab="Number of people in the room",ylab="P(least two same-day birthdays)",cex.lab=1.5,cex.axis=1.5,col.axis="blue")
+```
+Note that we only plot the probabilities up to size of the group $n=100$ because after that all probabilities are extremely close to $1$ and the plot looks better.
+
+We will now simulate the Monte Hall problem and we will provide Monte Carlo simulations of the game. This should illustrate two things: 1) that probabilities can be different depending on the strategy for opening the door; 2) that Monte Carlo simulations are a powerful strategy to quickly answer complex questions. 
+
+Estimate the winning probability with door-change and no door-change strategies. Play the game $10,000$ times with each strategy
+```{r}
+n_games=10000                            #set the number of games
+doors=1:3                                #label doors
+no_door_switching=rep(NA,n_games)        #use storage vectors for successes
+door_switching=no_door_switching
+for (i in 1:n_games)
+    {#begin playing
+    draw_prize=sample(doors,size=1)     #randomly assign 1 prize to one of three doors               
+    draw_door=sample(doors,size=1)      #randomly choose 1 door in the first round                
+    no_door_switching[i]=(draw_prize==draw_door)      #win/loose for no switching strategy
+    if (draw_door==draw_prize)                        #if the chosen door has the prize 
+       {show_door=sample(doors[-draw_prize],size=1)   #then MH opens one of the other doors
+       }else                                          #if the chosen door is not the prize door
+       {show_door=doors[c(-draw_door,-draw_prize)]}   #then MH opens the other door with no prize
+    door_switch=doors[c(-draw_door,-show_door)]       #identify the door to switch to
+    door_switching[i]=(draw_prize==door_switch)       #win/loose for switching strategy
+    }#end playing
+```
+
+Compare the frequency of success of the two strategies
+```{r}
+round(c(mean(door_switching),mean(no_door_switching)),digits=3)
+```
+
+Using `R` to sample. This is a very important skill to learn. Sampling, probability and statistics go hand-in-hand. Understanding sampling is one of the fundamental ways of understanding variability. Statistics is the science for making inference in spite of variability. 
+
+```{r}
+x1 <- sample (1:6)                   #a random permutation
+x2 <- sample (1:6)                   #and another
+x3 <- sample (1:6)                   #and another
+x1
+x2
+x3
+```
+Random permutations are a type of resampling without replacement. They are extensively used in `random permutation testing`. For example, when one is interested in comparing a treatment to a control group. In this case a test statistic is constructed (e.g. the difference in mean of the two groups). However, in order to assign statistical significance to the observed discrepancy between groups, one would need to know what types of values could be consistent with the observed data. In this situation a permutation of treatment labels could provide the null distribution of the test statistic (more about these concepts later).
+
+Sampling with replacement: after each draw the number is placed back and be drawn again. Sampling without replacement: once a number is drawn it cannot be drawn again (e.g. lottery)
+```{r}
+x1 <- sample ( 1:6, 10, replace=T )        #sampling with replacement
+x2 <- sample ( 1:6, 10, replace=T )        #again
+x3 <- sample ( 1:6, 10, replace=T )        #and again
+x1
+x2
+x3
+```
+In general there are $n!$ permutations for a vector of length $n$.
+
+Once the vector is sampled various operations can be applied t it
+```{r}
+sum (x1 == 3)                             #how many are equal to 3
+max (x1)                                  #maximum of x1
+median(x1)                                #median of x1
+```
+
+Note that the nonparametric boostrap is simply the sampling with replacement of the vector with a number of draws equal to the length of the original data. Do not under estimate the importance of simple ideas. Statistics is the science of simplicity. 
+```{r}
+x <- sample ( 1:10, 10, replace=T )       #nonparametric bootstrap
+n=30                                      #for an arbitrary n
+x <- sample ( 1:n, n, replace=T )         #the general form of the nonparametric bootstrap
+```
+In general, there are $n^n$ nonparametric boostrap samples.
+
+```{r}
+# simulating the probability of Come out rolls at a game of Craps
+n_games <- 10000                         #set the number of games
+wins <- rep ( 0, n_games)                #use storage vectors for wins
+for ( i in 1:n_games )
+    {#start playing n_games of Craps
+    d <- sample ( 1:6, 2, replace=T )    #roll two dice, note the R representation
+    if ( sum(d)== 7 || sum(d) == 11 )    #if the sum is 7 or 11 
+    wins[i] <- 1                         #then win, otherwise loose
+    }#end playing n_games of Craps
+round(mean (wins),digits=3)              #display the MC estimated winning probability
+```
+
+###Bernoulli 
+Here we are interested to show how to implement coin-flipping (Bernoulli draws) in `R`. Basically every random variable can be derived frm simple Bernoulli draws (more about that later.) Below we show how to: 1) draw $21$  samples from independent Bernoulli random variables with probability of success of $0.5$ (21 fair coin flips); and 2) draw $21$  samples from independent Bernoulli random variables with probabilities of success: $0.00, 0.05, 0.10, 0.15, \ldots, 0.95,1.00$, respectively.
+```{r}
+x1<-rbinom(21,1,0.5)
+x2<-rbinom(21,1,seq(0,1,length=21))
+x1
+x2
+```
+And sample again
+```{r}
+x1<-rbinom(21,1,0.5)
+x2<-rbinom(21,1,seq(0,1,length=21))
+x1
+x2
+```
+What similarities and differences do you observe between the four draws? Is the outcome of $21$ independent draws with the same probability the same? Could you provide real world examples where observed data could reasonably be generated by independent Binomial draws?
+
+###Poisson
+Simulate two $15$ independent days periods with an average number of patients $= 20$
+```{r}
+rpois(15,20)
+rpois(15,20)
+```
+
+Reconstructing the pmf from samples
+```{r}
+y<-rpois(10000,20)                       #simulate 10000 independent Poisson(20)
+py=rep(0,100)                            #build the storage vector of Poisson probabilities
+for (i in 1:length(py))                  #for every possible outcome between 1 and 100
+    {py[i]<-mean(y==i)}                  #calculate the frequency of observing that number among the 10000 ind Poisson realizations 
+```
+
+Display the theoretical and empirical (reconstructed from observations) Poisson distributions 
+```{r}
+x=1:100                          #Set the x-axis, where the Poisson pdf is evaluated
+lambda=20                        #Set the Poisson success rate
+plot(x,dpois(x,lambda),type="p",pch=19,col="blue",lwd=3, xlab="Number of patients",
+ylab="Probability",cex.lab=1.5,cex.axis=1.5,col.axis="blue")
+lines(1:100,py,col="red",lwd=3)          #here, lwd controls the thickness of the line
+```
+
+###pmf and pdf 
+What's the probability that a randomly selected person with and $exp(5)$ distribution (here $5$ represents mean survival time) survives for more than 6 years?
+
+```{r}
+surv_prob=pexp(6, 1/5, lower.tail = FALSE)
+round(surv_prob,digits=3)
+```
+
+What's the probability that a randomly selected person with and $exp(5)$ distribution (here $5$ represents mean survival time) survives strictly more than 5 and strictly less
+than 6 years?
+
+```{r}
+surv_prob=pexp(6, 1/5)-pexp(5, 1/5)
+round(surv_prob,digits=3)
+```
+
+Plotting the pdf of a double exponential distribution $f(x)=0.5\exp(-|x|)$
+
+```{r}
+x=seq(-5,5,length=101)                             #set the grid where the evaluate the pdf
+fx=exp(-abs(x))/2                                  #calculate the pdf at the grid points
+plot(x,fx,type="l",col="blue",lwd=3,xlab="error",ylab="PDF",cex.lab=1.5,cex.axis=1.5,col.axis="blue")
+```
+
+Play with the various plotting options to better understand what each one is doing. Construct the empirical pdf of a double exponential from $100$ simulated observations from double exponential distribution with mean $2$ and dispersion parameter $2$.
+
+```{r}
+library(VGAM)                                                   #install the library for the double exponential distribution 
+
+mu=2                                                            #set the mean parameter
+sigma=2                                                         #set the dispersion paramater
+y=rlaplace(100,mu,sigma)                                        #generate 100 independent samples
+hist(y,breaks=20,probability=TRUE,xlab="error",ylim=c(0,.25))   #plot the histogram of the observations
+
+x=seq(mu-7,mu+7,length=101)                                     #set a grid around the true mean
+fx=exp(-abs(x-mu)/sigma)/(2*sigma)                              #calculate the true pdf of teh double exponential
+lines(x,fx,col="orange",lwd=3)                                  #overplot the theoretical distribution
+```
+
+Obtain the quantiles of the distribution directly from `R` (no need for books with tables of distributions). Below we show the first quartile of an exponential distribution with mean survival rate of $5$
+```{r}
+surv_time=qexp(.25, 1/5)
+round(surv_time,digits=3)
+```
+
+This can be interpreted as $25$\% of a population with an exponential survival rate of $5$ (years, months days) will die before $1.438$ (years, months, days). Calculate the quantiles of an exponential distribution with mean $5$
+
+```{r}
+tq<-qexp(seq(0.01,0.99,length=100), 1/5)
+round(tq,digits=2)
+```
+
+How do theoretical and empirical (obtained from data) quantiles compare. Here we simply generate $3$ independent exponential random samples of size $30$ and then calculate their empirical quantiles
+
+```{r}
+x1<-rexp(30, 1/5)
+x2<-rexp(30, 1/5)
+x3<-rexp(30, 1/5)
+eq1<-quantile(x1,seq(0.01,0.99,length=100))
+eq2<-quantile(x2,seq(0.01,0.99,length=100))
+eq3<-quantile(x3,seq(0.01,0.99,length=100))
+```
+
+Obtain the QQ-plots (often used to compare distributions)
+
+```{r}
+plot(tq,eq1,type="p",pch=19,col="blue",lwd=3,xlab="Theoretical quantiles",ylab="Empirical quantiles",cex.lab=1.5,cex.axis=1.5,col.axis="blue",xlim=c(0,25),ylim=c(0,25))
+points(tq,eq2,pch=19,col="orange",lwd=3)
+points(tq,eq3,pch=19,col="red",lwd=3)
+lines(c(0,25),c(0,25),lwd=3)
+```
+
+Do the same thing (code not printed) for $n=100$ 
+
+```{r,echo=FALSE}
+x1<-rexp(100, 1/5)
+x2<-rexp(100, 1/5)
+x3<-rexp(100, 1/5)
+eq1<-quantile(x1,seq(0.01,0.99,length=100))
+eq2<-quantile(x2,seq(0.01,0.99,length=100))
+eq3<-quantile(x3,seq(0.01,0.99,length=100))
+plot(tq,eq1,type="p",pch=19,col="blue",lwd=3,xlab="Theoretical quantiles",ylab="Empirical quantiles",cex.lab=1.5,cex.axis=1.5,col.axis="blue",xlim=c(0,25),ylim=c(0,25))
+points(tq,eq2,pch=19,col="orange",lwd=3)
+points(tq,eq3,pch=19,col="red",lwd=3)
+lines(c(0,25),c(0,25),lwd=3)
+```
+
+And $n=500$
+
+
+```{r,echo=FALSE}
+x1<-rexp(500, 1/5)
+x2<-rexp(500, 1/5)
+x3<-rexp(500, 1/5)
+eq1<-quantile(x1,seq(0.01,0.99,length=100))
+eq2<-quantile(x2,seq(0.01,0.99,length=100))
+eq3<-quantile(x3,seq(0.01,0.99,length=100))
+plot(tq,eq1,type="p",pch=19,col="blue",lwd=3,xlab="Theoretical quantiles",ylab="Empirical quantiles",cex.lab=1.5,cex.axis=1.5,col.axis="blue",xlim=c(0,25),ylim=c(0,25))
+points(tq,eq2,pch=19,col="orange",lwd=3)
+points(tq,eq3,pch=19,col="red",lwd=3)
+lines(c(0,25),c(0,25),lwd=3)
+```

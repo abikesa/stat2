@@ -1,0 +1,106 @@
+---
+title: "Lecture 4 in Biostatistics 651-652 at JHU Bloomberg School of Public Health"
+author: "Ciprian M. Crainiceanu"
+date: "Monday, August 08, 2016"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>. RStudio is the recommended software for using the document.  
+
+This document is used together with the Lectures notes for Lecture 4 in the Biostatistics 651-652 series. The idea is to learn how to produce reproducible Biostatistical documents where text, data, and results are interweaved. R is taught by reading and understanding these documents, but learning R requires much additional individual effort.
+
+Simulating independent discrete variables
+
+*Independent Bernoulli draws*
+```{r}
+x<-rbinom(10,1,prob=0.3)                               #Draw 10 Bernoulli RV realizations with probability 0.3
+bernm<-seq(0,1,by=0.1)                                 #construct a vector of equally spaced probabilities
+x<-rbinom(3*length(bernm),1,prob=bernm)                #Simulate a vector of size 3 timesthe length of the prob. vector
+mx=matrix(x,ncol=length(bernm),byrow=TRUE)             #store into a matrix with 3 rows, each row corresponds to one repetition
+mx                                                     #Each column corresponds to a probability of success
+```
+
+
+*Independent Poisson draws*
+```{r}
+x<-rpois(10000,20)                                     #Simulate 10000 Poisson realizations
+poism<-c(1,2.5,5,7.5,10,1000)                          #Simulate independent Poissons with different means
+x<-rpois(24,poism)                                     #Simulate 24 independent Poissons, note how the Poisson mean is recycled 4 times
+x
+```
+
+
+*Independent Normal draws*
+```{r}
+x<-rnorm(1000,mean=2,sd=9)                            #Simulate 1000 independent N(2,9)
+normm<-1:100                                          #Set a mean vector of length 100
+sdm<-normm/3                                          #Set a standard deviation vector
+x<-rnorm(150*length(normm),mean=normm,sd=sdm)         #Simulate independently 150 observations from N(normm,sdm)
+mx=matrix(x,ncol=length(normm),byrow=TRUE)            #Store simulations in a 150 by 100 dimensional matrix
+```
+Checking results
+```{r}
+dim(mx)
+colMeans(mx)
+```
+
+If $X_1,X_2$ are independent random variables with a $N(0,1)$ distribution (also called iid or independent identically distributed). We would like to calculate $P(X_1>1.5,X_2>1)=P(X_1>1.5)P(X_2>1)$
+```{r}
+probt=(1-pnorm(1.5))*(1-pnorm(1))
+```
+
+Now, use Monte Carlo simulations to estimate the same probability and compare it with the theoretical probability
+
+```{r}
+nsim=100000                                           #Obtain 100,000 independent random samples                                    
+x1=rnorm(nsim)                                        #From N(0,1)
+x2=rnorm(nsim)                                        #and again
+probs=mean((x1>1.5) & (x2>1))                         #Calculate the frequency with which the two variables exceed 1.5 and 1
+round(probt,digits=4)                                 #display theoretical value
+round(probs,digits=4)                                 #display MC simulation value
+round(100*abs(probs-probt)/probt,digits=3)            #display percent difference
+```
+
+*Classical measurement error and ICC*
+
+Simulate measurement error data with reliability $0.5$ (same thing as true intra-class correlation coefficient=$0.5$)
+
+```{r}
+X<-rnorm(200,130,10)                                  #simulate true SBP
+U<-matrix(rnorm(400,m=0,sd=10),ncol=2)                #simulate contamination
+W<-X+U                                                #obtain contaminated, proxy data
+round(cor(W),digits=3)                                #calculate the intra-class-correlation coefficient (ICC)
+```
+
+*Theoretical and sampling distributions*
+
+```{r}
+#Distribution of  N(2, 9)
+par(mfrow = c(1, 2))
+x=seq(-6,10,length=101)
+y=dnorm(x,m=2,sd=3)
+ry=rnorm(100,m=2,sd=3)
+hist(ry,probability=TRUE,xlim=c(-6,10))
+lines(x,y,type="l",col="blue",lwd=3)
+
+#Distribution of X9 \sim N(2, 1)
+
+ym=dnorm(x,m=2,sd=1)
+rym<-rep(0,100)
+for (i in 1:100)
+    {rym[i]<-mean(rnorm(9,m=2,sd=3))}
+hist(rym,probability=TRUE,xlim=c(-6,10))
+lines(x,ym,type="l",col="red",lwd=3)
+```
+
+*Simulating a mixture distribution*
+```{r}
+x=seq(-3,10,length=201)
+dx=.7*dnorm(x)+.3*dnorm(x,m=5,sd=2)
+X1<-rnorm(1000)
+X2<-rnorm(1000,m=5,sd=2)
+U<-rbinom(1000,1,p=.7)
+X=U*X1+(1-U)*X2
+hist(X,breaks=30,probability=TRUE,xlim=c(-3,10),ylim=c(0,0.3),xlab="Population values",cex.lab=1.5,cex.axis=1.5,col.axis="blue")
+lines(x,dx,type="l",col="blue",lwd=3)
+```

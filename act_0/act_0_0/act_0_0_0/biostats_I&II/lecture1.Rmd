@@ -1,0 +1,151 @@
+---
+title: "Lecture 1 in Biostatistics 651-652 at JHU Bloomberg School of Public Health"
+author: "Ciprian M. Crainiceanu"
+date: "Monday, August 08, 2016"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>. RStudio is the recommended software for using the document.  
+
+This document is used together with the Lectures notes for Lecture 1 in the Biostatistics 651-652 series. The idea is to learn how to produce reproducible Biostatistical documents where text, data, and results are interweaved. R is taught by reading and understanding these documents, but learning R requires much additional individual effort.
+
+
+We start by reading the data set discussed in class. The data set is stored in a text file and is loaded as described below. Please ensure that you change the fil path to the correct file path on your computer.
+```{r}
+file.name="D://teaching//2016//651_652//Data//BMI_AGE/bmi_age.txt"
+data_bmi=read.table(file=file.name,header=TRUE)
+attach(data_bmi)
+```
+Show the data (here I plot the entire data set because it is small). In general a subset of the data would need to be shown.
+
+```{r}
+data_bmi
+```
+
+If data are large with many variables, then do
+
+```{r}
+names(data_bmi)
+```
+
+We can also do simple data manipulations
+
+```{r}
+mean(BMI)
+sd(BMI)
+```
+
+
+Or show a basic plot (fancier plotting options will be shown later)
+
+```{r}
+plot(AGE,BMI,type="p",pch=20,cex=2,col="blue")
+```
+
+Consider the two subsets of subjects discussed in Lecture 1: $A$ subjects with BMI$<26$ and $B$ subjects older than 45 (AGE$>45$). Construct the indeces for these subject ids
+```{r}
+index_BMI_less_26=BMI<26
+index_AGE_greater_45=AGE>45
+```
+Display $A$ and $B$
+```{r}
+PID[index_BMI_less_26]
+PID[index_AGE_greater_45]
+```
+
+Let us calculate $(A \cap B)^c$, the complement of the intersection between $A$ and $B$. These will be subjects who are/do not (note the $c$ that stands for complement) both (older than $45$) and (have a BMI less than 26)
+```{r}
+index_A_int_B_compl<- !(index_BMI_less_26 & index_AGE_greater_45)
+PID[index_A_int_B_compl]
+```
+
+So, this is everybody, except subject with $ID=4$. Note that $!$ denotes "is not" 
+and $\&$ denotes "and" in `R`. As an exercise perform the other operations indicated in Lecture 1 including $A^c \cup B^c$, $(A \cup B)^c$, and $A^c$. You could also play with other sets and try to extract information from the matrix. While this dataset is relatively small for educational purposes, similar subsetting approaches are both essential and impossible to do by hand in large datasets.
+
+###An intuitive introduction to the bootstrap
+
+*Below we introduce some more advanced code to illustrate the bootstrap. An in-depth introduction of the bootstrap will be done later in the course. The bootstrap is a resampling technique that is extremely powerful and relatively easy to understand*
+
+**Nonparametric bootstrap is the procedure of resampling with replacement a dataset, where the number of observation in each resampled dataset is equal to the number of observations in the original dataset**
+
+Conduct $3$ bootstrap samples of the data and print them. This procedure is referred to as nonparametric bootstrap of subjects 
+
+```{r}
+nboot=3                   #number of boostrap samples
+nsubj=dim(data_bmi)[1]    #number of subjects
+for (i in 1:nboot)        #start bootstrapping
+  {#begin the bootstrap for loop
+  resampling=sample(1:nsubj,replace=TRUE)    #build the sample with replacement
+  bootstrapped_data=data_bmi[resampling,]    #resample the entire data set
+  print(bootstrapped_data)                   #print bootstrapped datasets
+  cat(" \n \n")                              #add lines between bootstrapped datasets
+  }#end the bootstrap for loop
+```
+
+
+Do not be surprised that every time you knit the document the $3$ bootstrap data sets change. This happens because of the random nature of the sampling mechanism. The total number of different nonparametric bootstraps datasets is $10^10$, or 10 billion. If you want to always obtain the same dataset you can set the seed (this would need to be done before the sampling code) of the pseudo random number (PRN) generator in `R`
+
+```{r}
+set.seed(4132697)
+```
+The `set.seed()` function resets the PRN for the next simulation and does not have an effect on the previous simulation, which will continue to produce $3$ different data sets every time the document is knit. 
+
+Now, we would like to construct a 95\% bootstrap confidence interval for the difference in the means of BMI for women and men, given this data set. While these concepts have not been introduced in Lecture 1, they can be learned by following the code closely. Resampling techniques, like the bootstrap, will be used extensively 
+
+```{r}
+women_bmi<-BMI[SEX==1]                 #vector of BMI values for men
+men_bmi<-BMI[SEX==0]                   #vector of BMI values for women
+n_women<-length(women_bmi)             #number of women in the dataset
+n_men<-length(men_bmi)                 #number of men in the dataset
+```
+
+Display the difference in mean BMI between women and men
+
+```{r}
+mean(women_bmi)-mean(men_bmi)
+```
+
+Conduct a bootstrap with $10,000$ resamples of the data
+```{r}
+B_boot<-10000                         #number of bootstrap samples
+mean_diff=rep(NA,B_boot)              #define the vector storing the differences in BMI
+for (i in 1:B_boot)
+  {#Begin bootstrap
+	mw<-mean(women_bmi[sample(1:n_women,replace=TRUE)])   #calculate the mean for women
+	mm<-mean(men_bmi[sample(1:n_men,replace=TRUE)])       #calculate the mean for men
+	mean_diff[i]<-mw-mm                                   #calculate and store the difference
+	}#End bootstrap
+```
+
+Display the histogram of the $10,000$ boostrap samples of the mean difference
+
+```{r}
+hist(mean_diff,breaks=20)
+```
+
+Calculate the mean, standard deviation, Normal approximation + Bootstrap-based 95\% confidence intervals (more details later once we learn about quantiles of the standard normal and empirical quantiles of a distribution).
+
+```{r}
+mBoot<-mean(mean_diff)                            #calculate the mean of the differences
+sdBoot<-sd(mean_diff)                             #calculate the sd of the differences
+CI1<-c(mBoot-1.96*sdBoot,mBoot+1.96*sdBoot)       #normal approximation to the 95% CI 
+CI2<-quantile(mean_diff,probs=c(0.025,0.975))     #bootstrap 95% CI
+```
+
+Display and compare the two 95% CIs (normal and boostrap approximations)
+```{r}
+round(CI1, digits = 2)
+as.vector(CI2)
+```
+
+Percent difference in length
+```{r,echo=FALSE}
+round(as.vector(100*abs(CI1[2]-CI1[1]-CI2[2]+CI2[1])/(CI1[2]-CI1[1])),digits=2)
+```
+
+Plot the bootstrap results together with the 95\% Normal approximation confidence intervals (red)
+```{r}
+hist(mean_diff,probability=T,col=rgb(0,0,1,1/4),breaks=50,xlim=c(-2,12),xlab="BMI mean difference (women-men)",cex.lab=1.5,cex.axis=1.5,col.axis="blue")
+lines(c(CI1[1],CI1[1]),c(0,0.05),col="red",lwd=3)
+lines(c(CI1[2],CI1[2]),c(0,0.05),col="red",lwd=3)
+```

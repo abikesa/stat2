@@ -1,0 +1,92 @@
+############################################################
+### Does some analysis of the covariate data for 651.      #
+### 9/20/13 CMC                                            #
+###                                                        #
+############################################################
+dat <- read.csv("Domain_MRI.txt")
+
+gmVol <- dat$GMVOL / 1000
+wmVol <- dat$WMVOL / 1000
+
+gmVol <- gmVol[!is.na(gmVol)]
+
+##do the jackknife
+n <- length(gmVol)
+theta <- median(gmVol)
+jk <- sapply(1 : n,
+             function(i) median(gmVol[-i])
+             )
+thetaBar <- mean(jk)
+biasEst <- (n - 1) * (thetaBar - theta) 
+seEst <- sqrt((n - 1) * mean((jk - thetaBar)^2))
+
+library(bootstrap)
+out <- jackknife(gmVol, median)
+out$jack.se
+out$jack.bias
+
+
+
+B <- 1000
+n <- length(gmVol)
+resamples <- matrix(sample(gmVol,
+                           n * B,
+                           replace = TRUE),
+                    B, n)
+medians <- apply(resamples, 1, median)
+sd(medians)
+quantile(medians, c(.025, .975))
+
+fit <- density(medians)
+
+postscript("bootstrap.eps", height = 6, width = 6, horizontal = FALSE)
+plot(fit$x, fit$y, type = "l", frame = FALSE, xlab = "Gray Matter Volume", ylab = "density", lwd = 3)
+abline(v = quantile(medians, c(.025, .975)), lwd =3, lty = 2)
+dev.off()
+
+library(boot)
+stat <- function(x, i) {median(x[i])}  
+boot.out <- boot(data = gmVol,
+                 statistic = stat,
+                 R = 1000)
+boot.ci(boot.out)
+
+attach(dat)
+pdf("greyMatter.pdf", paper = "letter", horizontal = FALSE)
+
+qqnorm(log(GMVOL))
+boxplot(log(GMVOL))
+plot(density(log(GMVOL), na.rm = TRUE))
+
+
+##clearly we need to consider at least age
+boxplot(log(GMVOL) ~ AGE >= 60)
+title("Boxplot of log(GMVOL) by Age >= 60")
+
+##bootstrap estimate of the sample mean
+lgmv <- log(GMVOL[AGE >= 60])
+
+##the density of just the older
+plot(density(lgmv))
+
+##get rid of the missing values
+lgmv <- lgmv[!is.na(lgmv)]
+n <- length(lgmv)
+numberSims <- 10 ^ 4
+resamples <- sapply(1 : numberSims,
+                    function(x){
+                      mean(sample(lgmv, n, replace = TRUE))
+                    }
+                    )
+
+
+plot(density(resamples))
+abline(v = quantile(resamples, .025))
+abline(v = quantile(resamples, .975))
+
+##get the %ile bootstrap estimates
+quantile(resamples, c(.025, .975))
+
+##compare with the t interval
+mean(lgmv) + c(1, -1) * qt(.025, df = n - 1) * sd(lgmv) / sqrt(n)
+dev.off()

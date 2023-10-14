@@ -1,0 +1,392 @@
+\documentclass[12pt]{article}
+\usepackage{geometry,amsmath,amssymb, graphicx, natbib, float, enumerate}
+\geometry{margin=1in}
+\renewcommand{\familydefault}{cmss}
+\restylefloat{table}
+\restylefloat{figure}
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\logit}{\mathrm{logit}}
+\newcommand{\alone}{[{\bf ALONE}]~}
+
+\begin{document}
+\noindent
+{\bf BST 140.651 \\ Problem Set 3} \\
+
+\begin{enumerate}[Problem 1.]
+\item Imagine that a person, say his name is Flip, has an oddly
+  deformed coin and tries the following experiment.  Flip flips his
+  coin $10$ times, $7$ of which are heads. You think maybe Flip's coin
+  is biased towards having a greater probability of yielding a head than 50\%.
+  \begin{enumerate}[a.]
+  \item What is the maximum likelihood estimate of $p$, the true probability of
+    heads associated with this coin?
+  \item Plot the likelihood associated with this experiment. Renormalize the
+    likelihood so that its maximum is one. Does the likelihood suggest that
+    the coin is fair?
+  \item Whats the probability of seeing $7$ or more heads out of ten
+    coin flips if the coin was fair? Does this probability suggest
+    that the coin is fair? Note this number is called a P-value.
+  \item Suppose that Flip told you that he did not fix the number of
+    trials at $10$. Instead, he told you that he had flipped the coin
+    until he obtained $3$ tails and it happened to take $10$ trials to
+    do so. Therefore, the number $10$ was random while the number
+    three $3$ fixed.  The probability mass function for the number of
+    trials, say $y$, to obtain $3$ tails (called the negative binomial
+    distribution) is
+    $$
+    \left(\begin{array}{c}y-1 \\ 2\end{array}\right)(1-p)^3p^{y - 3}
+    $$
+    for $y=3,4,5,6,\ldots$. What is the maximum likelihood estimate of
+    $p$ now that we've changed the underlying mass function?
+  \item Plot the likelihood under this new mass function. Renormalize
+    the likelihood so that its maximum is one. Does the likelihood
+    suggest that the coin is fair?
+  \item Calculate the probability of requiring $10$ or more flips to
+    obtain $3$ tails if the coin was fair. (Notice that this is the
+    same as the probability of obtaining $7$ or more heads to obtain
+    $3$ tails.) This is the Pvalue under
+    the new mass function.
+    \ \\ \ \\
+    (Aside) This problem highlights a distinction between the
+    likelihood and the P-value. The likelihood and the MLE are the
+    same regardless of the experiment. That is to say, the likelihood
+    only seems to care that you saw $10$ coin flips, $7$ of which were
+    heads. Flip's intention about when he stopped flipping the coin,
+    either at $10$ fixed trials or until he obtained $3$ tails, are
+    irrelevant as far as the likelihood is concerned. The P-value, in
+    comparison, does depend on Flip's intentions.
+  \end{enumerate}
+\item  Suppose a researcher is studying the number of sexual
+  acts with an infected person until an uninfected person contracts an
+  sexually transmitted disease. She assumes that each encounter is an
+  independent Bernoulli trial with probability $p$ that the subject
+  becomes infected. This leads to the so-called geometric distribution
+  $P(\mbox{Person is infected on contact } x) = p(1 - p)^{x-1}$ for
+  $x=1,\ldots$.
+  \begin{enumerate}[a.]
+  \item Suppose that one subject's number of encounters until
+    infection is recorded, say $x$. Symbolically derive the ML
+    estimate of $p$.
+  \item Suppose that the subjects value was $2$. Plot and interpret
+    the likelihood for $p$.
+  \item Suppose that is often assumed that the probability of
+    transmission, $p$, is $.01$. The researcher thinks that it is
+    perhaps strange to have a subject get infected after only $2$
+    encounters if the probability of transmission is really on
+    $1\%$. According to the geometric mass function, what is the
+    probability of a person getting infected in $2$ or fewer
+    encounters if $p$ truly is $.01$?
+  \item Suppose that she follows $n$ subjects and records the number
+    of sexual encounters until infection (assume all subjects became
+    infected) $x_1,\ldots,x_n$. Symbolically derive the ML
+    estimate of $p$.
+  \item Suppose that she records values $x_1 = 3$, $x_2 = 5$, $x_3 = 2$.
+    Plot and interpret the likelihood for $p$.
+  \end{enumerate}
+\item  In a study of aquaporins $6$ frog eggs received a protein
+  treatment. If the treatment of the protein is effective, the frog
+  eggs would implode. The experiment resulted in $5$ frog eggs
+  imploding.  Historically, ten percent of eggs implode without the
+  treatment. Assuming that the results for each egg are independent
+  and identically distributed:
+  \begin{enumerate}[a.]
+  \item What's the probability of getting $5$ or more eggs imploding
+    in this experiment if the true probability of implosion is $10\%$?
+    Interpret this number.
+  \item What is the maximum likelihood estimate for the probability of
+    implosion?
+  \item Plot and interpret the likelihood for the probability of implosion.
+  \end{enumerate}
+
+\item (Adapted from Rosner page 135) Suppose that the diastolic blood
+  pressures of $35-44$ year old men are normally distributed with mean
+  $80$ ($mm$ $Hg$) and variance $144$. For the same population, the
+  systolic blood pressures are also normally distributed and have a
+  mean of $120$ and variance $121$.
+  \begin{enumerate}[a.]
+  \item What is the probability that a randomly selected person from
+    this population has a DBP less than 90?
+  \item What DBP represents the $90^{th}$, $95^{th}$ and $97.5^{th}$
+    percentiles of this distribution?
+  \item What's the probability of a random person from this population
+    having a SBP $1$, $2$ or $3$ standard deviations above $120$?
+    What's the corresponding probabilities for having DBPs $1$, $2$ or
+    $3$ standard deviations above $80$?
+  \item Suppose that $10$ people are sampled from this population.  What's
+    the probability that 50\% (5) of them have a SBP larger than $140$?
+  \item Suppose that $1,000$ people are sampled from this population.  What's
+    the probability that 50\% (500) of them have a SBP larger than $140$?
+  \item If a person's SBP and DBP are independent, what's the
+    probability that a person has a SBP larger than $140$ and a DBP
+    greater than $90$? Is independence a good assumption?
+  \item Suppose that an average of $200$ people are drawn from
+    this population. What's the probability that this average
+    is smaller than $81.3$?
+  \end{enumerate}
+\item  Suppose that IQs in a particular population are normally
+  distributed with a mean of $110$ and a standard deviation of $10$.
+  \begin{enumerate}[a.]
+  \item What's the probability that a randomly selected person from
+    this population has an IQ between $95$ and $115$?
+  \item What's the $65^{th}$ percentile from this distribution?
+  \item Suppose that $5$ people are sampled from this distribution.
+    What's the probability $4$ (80\%) or more have IQs above $130$?
+  \item Suppose that $500$ people are sampled from this distribution.
+    What's the probability $400$ (80\%) or more have IQs above $130$?
+  \item Consider the average of $100$ people drawn from this
+    distribution. What's the probability that this mean is larger
+    than $112.5$?
+  \end{enumerate}
+\item  Suppose that $400$ observations are drawn at random
+  from a distribution with mean $0$ and standard deviation $40$.
+  \begin{enumerate}[a.]
+  \item What's the approximate probability of getting a sample mean larger
+    than $3.5$?
+  \item Was normality of the underlying distribution required for this
+    calculation?
+  \end{enumerate}
+\item Recall that R's function \texttt{runif} generates (by default)
+  random uniform variables that have means $1/2$ and variance $1/12$.
+  \begin{enumerate}[a.]
+  \item Sample $1,000$ observations from this distribution. Take the
+    sample mean and sample variance. What numbers should these
+    estimate and why?
+  \item Retain the same $1,000$ observations from part a. Plot the
+    sequential sample means by observation number. Hint. If $x$ is a
+    vector containing the simulated uniforms, then the code \texttt{y
+      <- cumsum(x) / (1 : length(x))} will create a vector of the
+    sequential sample means. Explain the resulting plot.
+  \item Plot a histogram of the $1,000$ numbers. Does it look like a
+    uniform density?
+  \item Now sample $1,000$ {\em sample means} from this distribution,
+    each comprised of $100$ observations. What numbers should the
+    average and variance of these $1,000$ numbers be equal to and why?
+    Hint. The command
+    \begin{quote}
+      \texttt{x <- matrix(runif(1000 * 100), nrow = 1000)}
+    \end{quote}
+    creates a matrix of size $1,000\times 100$ filled with random
+    uniforms. The command \texttt{y<-apply(x,1,mean)} takes the sample
+    mean of each row.
+  \item Plot a histogram of the $1,000$ sample means appropriately
+    normalized. What does it look like and why?
+  \item Now sample $1,000$ {\em sample variances} from this distribution,
+    each comprised of $100$ observations. Take the average of these
+    $1,000$ variances. What property does this illustrate and why?
+  \end{enumerate}
+\item Note that R's function \texttt{rexp} generates random
+  exponential variables. The exponential distribution with rate $1$
+  (the default) has a theoretical mean of $1$ and variance of $1$.
+  \begin{enumerate}[a.]
+  \item Sample $1,000$ observations from this distribution. Take the
+    sample mean and sample variance. What numbers should these
+    estimate and why?
+  \item Retain the same $1,000$ observations from part a. Plot the
+    sequential sample means by observation number. Explain the
+    resulting plot.
+  \item Plot a histogram of the $1,000$ numbers. Does it look like a
+    exponential density?
+  \item Now sample $1,000$ {\em sample means} from this distribution,
+    each comprised of $100$ observations. What numbers should the
+    average and variance of these $1,000$ numbers be equal to and why?
+ \item Plot a histogram of the $1,000$ sample means appropriately
+    normalized. What does it look like and why?
+  \item Now sample $1,000$ {\em sample variances} from this distribution,
+    each comprised of $100$ observations. Take the average of these
+    $1,000$ variances. What property does this illustrate and why?
+  \end{enumerate}
+\item  Consider the distribution of a fair coin flip (i.e. a random variable
+  that takes the values $0$ and $1$ with probability $1/2$ each.)
+  \begin{enumerate}[a.]
+  \item Sample $1,000$ observations from this distribution. Take the
+    sample mean and sample variance. What numbers should these
+    estimate and why?
+  \item Retain the same $1,000$ observations from part a. Plot the
+    sequential sample means by observation number. Explain the
+    resulting plot.
+  \item Plot a histogram of the $1,000$ numbers. Does it look like it places
+    equal probability on $0$ and $1$?
+  \item Now sample $1,000$ {\em sample means} from this distribution,
+    each comprised of $100$ observations. What numbers should the
+    average and variance of these $1,000$ numbers be equal to and why?
+ \item Plot a histogram of the $1,000$ sample means appropriately
+    normalized. What does it look like and why?
+  \item Now sample $1,000$ {\em sample variances} from this distribution,
+    each comprised of $100$ observations. Take the average of these
+    $1,000$ variances. What property does this illustrate and why?
+  \end{enumerate}
+\item Consider a density for the proportion of a person's body that is
+  covered in freckles, $X$, given by $f(x) = cx$ for $0 \leq x \leq 1$
+  and some constant $c$.
+  \begin{enumerate}[a.]
+  \item What value of $c$ makes this function a valid density?
+  \item What is the mean and variance of this density?
+  \item You simulated $100,000$ sample means, each comprised of $100$
+    draws from this density. You then took the variance of those
+    $100,000$ numbers. Approximately what number did you obtain?
+    (Explain.)
+  \end{enumerate}
+\item Suppose that DBPs drawn from a certain population are normally
+    distributed with a mean of $90$ $mmHg$ and standard deviation of $5$
+    $mmHg$. Suppose that $1,000$ people are drawn from this population.
+  \begin{enumerate}[a.]
+  \item If you had to guess the number of people people in having DBPs
+    less than $80$ $mmHg$ what would you guess?
+  \item  You draw
+    $25$ people from this population. What's the probability tha the
+    sample average is larger than $92$ $mmHg$?
+  \item  You select $5$
+    people from this population. What's the probability that $4$ or
+    more of them have a DBP larger than $100$ $mmHg$?
+  \end{enumerate}
+\item You need to calculate the probability that a {\em standard normal} is
+  larger than $2.20$, but have nothing available other than a regular coin.
+  Describe how you could estimate this probability using only your coin. (Do not
+  actually carry out the experiment, just describe how you would do it.)
+\item Let $X_1$, $X_2$ be independent, identically distributed coin
+  flips (taking values $0$ = failure or $1$ = success) having success
+  probability $\pi$. Give and interpret the likelihood ratio comparing
+  the hypothesis that $\pi = .5$ (the coin is fair) versus $\pi = 1$ (the
+  coin always gives successes) when both coin flips result in
+  successes.
+\item The density for the population of increases in wages for
+assistant professors being promoted to associates (1 = no increase, 2 = salary has
+doubled) is uniform on the range from 1 to 2.
+\begin{enumerate}[a.]
+\item What's the mean and variance of this density?
+\item Suppose that the sample variance of $10$ observations from this
+  density was sampled say $10,000$ times. What number would we expect
+  the average value from these $10,000$ variances to be near? (Explain
+  your answer briefly.)
+\end{enumerate}
+\item Suppose that the US intelligence quotients (IQs) are normally
+  distributed with mean $100$ and standard deviation $16$.
+  \begin{enumerate}[a.]
+  \item  What IQ
+    score represents the $5^{th}$ percentile? (Explain your calculation.)
+  \item Consider the previous question. Note that $116$ is the
+    $84^{th}$ percentile from this distribution. Suppose now that
+    $1,000$ subjects are drawn at random from this population. Use the
+    central limit theorem to write the probability that less than
+    $82\%$ of the sample has an IQ below $116$ as a standard normal
+    probability. Note, you do not need to solve for the final number. (Show your work.)
+  \item Consider the previous two questions. Suppose now that a sample
+    of $100$ subjects are drawn from a {\em new} population and that
+    $60$ of the sampled subjects had an IQs below $116$. Give a $95\%$
+    confidence interval estimate of the true probability of drawing a
+    subject from this population with an IQ below $116$. Does this proportion
+    appear to be different than the $84\%$ for the population from questions 1 and 2?
+  \end{enumerate}
+
+  \item Let $X$ be binomial with success probability $p_1$ and $n_1$
+    trials and $Y$ be an independent binomial with success probability
+    $p_2$ and $n_2$ trials.  Let $\hat p_1 = X / n_1$ and $\hat p_2 =
+    Y / n_2$ be the associated sample proportions. What would be an
+    estimate for the standard error for $\hat p_1 - \hat p_2$? To have
+    consistent notation with the next problem, label
+    this value $\hat{SE}_{\hat p_1 - \hat p_2}$.
+
+\item You are in desperate need to simulate standard normal random
+  variables yet do not have a computer available. You do, however, have
+  ten standard six sided dice. Knowing that the mean of a single die roll
+  is $3.5$ and the standard deviation is $1.71$, describe how you
+  could use the dice to approximately simulate standard normal random variables. (Be precise.)
+\item In a sample of $40$ United States men contained $25\%$
+  smokers. Let $p$ be the true prevalence of smoking amongst males in
+  the United States. Write out and draw and interpret the likelihood
+  for $p$. Is $p=.35$ or $p=.15$ better supported given the data (why,
+  and by how much)? What value of $p$ is best supported (just give the
+  number, do not derive)?
+\item Consider three sample variances, $S_1^2$, $S_2^2$ and
+  $S_3^2$. Suppose that the sample variances are comprised of $n_1$,
+  $n_2$ and $n_3$ iid draws from normal populations $N(\mu_1,
+  \sigma^2)$, $N(\mu_2, \sigma^2)$ and $N(\mu_3, \sigma^2)$, respectively. Argue
+  that $$\frac{(n_1 - 1)S_1^2 + (n_2 - 1)S_2^2 + (n_3 - 1) S_3^2}{n_1
+    + n_2 + n_3 - 3}$$ is an unbiased estimate of $\sigma^2$.
+\item You need to calculate the probability that a normally
+  distributed random variable is less than $1.25$ standard deviations
+  below the mean. However, you only have an oddly shaped coin with a
+  known probability of heads of $.6$. Describe how you could estimate
+  this probability using this coin. (Do not actually carry out the
+  experiment, just describe how you would do it.)
+\item The next three questions (A., B., C.) deal with the following
+  setting. Forced expiratory volume, $FEV_1$, is a measure of lung
+  function that is often expressed as a proportion of lung capacity
+  called forced vital capacity, FVC.  Suppose that the population
+  distribution of $FEV_1/FVC$ of asthmatics adults in the US has mean
+  of $.55$ and standard deviation of $.10$.
+\begin{enumerate}[A.]
+\item Suppose a random sample of $100$ people are drawn from this
+  population. What is the probability that their average $FEV_1/FVC$ is
+  larger than $.565$?
+\item Suppose the population of non-asthmatics adults in the US have
+  a mean $FEV_1/FVC$ of $.8$ and a standard deviation of $.05$.
+  You sample $100$ people from the asthmatic population and
+  $100$ people from the non-asthmatic population and take the
+  difference in sample means. You repeat this process $10,000$
+  times to obtain $10,000$ differences in sample means. What
+  would you guess the mean and standard deviation of these
+  $10,000$ numbers would be?
+\item Moderate or severe lung dysfunction is defined as $FEV_1/FVC
+  \leq .40$. A colleague tells you that $60\%$ of asthmatics
+  in the US have moderate or severe lung dysfunction. To verify this,
+  you take a random sample of $5$ subjects, only one of which has
+  moderate or severe lung dysfunction. What is the probability of
+  obtaining only one or fewer if your friend's assertion is
+  correct? What does your result suggest about their
+  assertion?
+\end{enumerate}
+\item Consider a sample of $n$ iid draws from an exponential density
+$$
+\frac{1}{\beta}\exp(-x / \beta) ~~\mbox{for}~~ \beta > 0.
+$$
+\begin{enumerate}[A.]
+\item Derive the maximum likelihood estimate for $\beta$.
+\item Suppose that in your experiment, you obtained five
+observations
+\begin{verbatim}
+ 1.590 0.109 0.155 0.281 0.453
+\end{verbatim}
+plot the likelihood for $\beta$. Put in reference lines at 1/8 and 1/16.
+\end{enumerate}
+\item Often infection rates per time at risk are modelled as Poisson
+random variables. Let $X$ be the number of infections and let $t$ be the
+person days at risk. Consider the Poisson mass function
+$
+(t\lambda)^x \exp(-t\lambda) / x!
+$
+The parameter $\lambda$ is called the population incident rate.
+\begin{enumerate}[A.]
+\item Derive the ML estimate for $\lambda$.
+\item Suppose that 5 infections are recorded per 1000 person-days at risk. Plot the likelihood.
+\item Suppose that five independent hospitals are monitored and that the infection rate ($\lambda$) is assumed to be the same at all five. Let $X_i$, $t_i$ be the count of the number of infections
+and person days at risk for hospital $i$. Derive the ML estimate of $\lambda$.
+\end{enumerate}
+\item Consider $n$ iid draws from a gamma density where $\alpha$ is known
+$$
+\frac{1}{\Gamma(\alpha)\beta^\alpha} x^{\alpha -1} \exp(-x/\beta) ~~~\mbox{for}~~~\beta > 0, x>0, \alpha > 0.
+$$
+\begin{enumerate}[A.]
+\item Derive the ML estimate of $\beta$.
+\item Suppose that $n=5$ observations were obtained: 0.015, 0.962, 0.613, 0.061, 0.617. Draw
+    a likelihood plot for $\beta$ (still assume that $\alpha = 1$).
+\end{enumerate}
+\item Let $Y_1,\ldots, Y_N$ be iid random variabels from a Lognormal distribution with parameters
+    $\mu$ and $\sigma^2$. Note $Y \sim \mbox{Lognormal}(\mu,\sigma^2)$ if and only if
+    $\log Y \sim N(\mu,\sigma^2)$. The log-normal density is given by
+    $$
+    (2\pi \sigma^2)^{-1/2} \exp[-\{\log(y) - \mu\}^2 / 2\sigma^2] / y ~~\mbox{for}~~ y > 0
+    $$
+    \begin{enumerate}[A.]
+    \item Show that the ML estimate of $\mu$ is $\hat \mu = \frac{1}{N} \sum_{i=1}^N \log(Y_i)$. (The
+    mean of the log of the observations. This is called the ``geometric mean''.)
+    \item Show that the ML estimate of $\sigma^2$ is then the biased variance estimate based
+    on the log observation
+    $$
+    \frac{1}{N}\sum_{i=1}^N (\log(y_i) - \hat \mu)^2
+    $$
+    \end{enumerate}
+  \end{enumerate}
+\end{document}

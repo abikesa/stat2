@@ -1,0 +1,88 @@
+---
+title: "HW 1 solutions"
+author: "Marta Karas"
+date: "Sept 9, 2020"
+output:
+  pdf_document:
+    toc: yes
+    toc_dept: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## RMarkdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. 
+
+* Bullet point 1
+    * Bullet subpoint 1
+* Bullet point 2
+* Bullet point 3
+
+1. Numbered point 1
+2. Numbered point 2
+3. Numbered point 3
+
+Inline Latex equation example: $x_1^2 + 2x_1 + 1$
+
+New line Latex equation example: $$x_1^2 + 2x_1 + 1$$
+
+$$
+\begin{aligned}
+x & = 1 \\
+y & = 2 \\
+z & = 3 + 3 + 3 + 3
+\end{aligned}
+$$
+
+
+## Header
+
+foo
+
+### Problem 3 solution
+
+foo
+
+####  Header
+
+foo
+
+#####  Header
+
+foo
+
+Here is a link: [link here](https://courseplus.jhu.edu/core/index.cfm/go/home/)
+
+```{r}
+1 + 2
+```
+
+Here we are generating 100 numbers from $N(1, 10^2)$: 
+```{r}
+set.seed(123)
+vec <- rnorm(n = 10, mean = 1, sd = 10)
+vec
+```
+
+```{r}
+mean(vec)
+sd(vec)
+```
+
+I am seeing a mean equal to ... 
+
+```{r, echo = FALSE, fig.height=2, fig.width=8}
+hist(vec)
+```
+
+
+
+
+
+
+
+
+

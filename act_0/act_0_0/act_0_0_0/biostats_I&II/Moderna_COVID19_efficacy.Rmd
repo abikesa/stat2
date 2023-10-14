@@ -1,0 +1,51 @@
+---
+title: "Moderna COVID19 efficacy data"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Published sources. 
+Acording to [CNN](https://www.cnn.com/2020/11/16/health/moderna-vaccine-results-coronavirus/index.html): "In Moderna's trial, 15,000 study participants were given a placebo, which is a shot of saline that has no effect. Over several months, 90 of them developed Covid-19, with 11 developing severe forms of the disease. Another 15,000 participants were given the vaccine, and only five of them developed Covid-19. None of the five became severely ill."
+
+Denote by $$X_1,\ldots,X_n\sim{\rm Bernoulli}(p_C)\;$$ $n=15,000$, the random variables indicating whether or not an individual who received the placebo treatment develops COVID-19 in a given period. The data suggests that a reasonable estimator of $p_C$ is $$\widehat{p}_C=\frac{90}{15000}=0.006\;,$$ or $60$ in $10000$.
+
+Denote by $$Y_1,\ldots,Y_n\sim{\rm Bernoulli}(p_T)\;,$$ $n=15,000$, the random variables indicating whether or not an individual who received the Moderna vaccine  develops COVID-19 in a given period. The data suggests that a reasonable estimator of $p_T$ is $$\widehat{p}_T=\frac{5}{15000}=0.0003\;,$$ or $3$ in $10000$.
+
+Treatment efficacy is defined as
+$${\rm Tx}_E=\frac{p_C-p_T}{p_C}=1-\frac{p_T}{p_C}$$
+which is $1$ minus the relative risk of infection. An estimator of the treatment efficacy is
+$$\widehat{\rm Tx}_E=1-\frac{\widehat{p}_T}{\widehat{p}_C}=1-\frac{5/15000}{90/15000}=1-\frac{5}{90}=0.944$$
+or $94.4$\%.
+
+We focus on constructing a confidence interval for $\frac{p_T}{p_C}$. The log relative risk estimator is $\log(\widehat{p}_T/\widehat{p}_C)=\log(5/90)=-2.89$. The standard error for the log relative risk is (see lecture 19 in Biostatistics 652)
+$$\widehat{\rm SE}_{\log RR}=\left\{\frac{1-\widehat{p}_C}{\widehat{p}_Cn_C}+\frac{1-\widehat{p}_T}{\widehat{p}_Tn_T}\right\}^{1/2}$$
+```{r}
+estpc=90/15000
+estpt=5/15000
+nc=15000
+nt=15000
+
+logrr=log(estpt/estpc)
+selogrr=sqrt((1-estpc)/(estpc*nc)+(1-estpt)/(estpt*nt))
+```
+
+Thus, the 95\% CI based on the Normal approximation for the log relative risk is
+
+```{r}
+logrr+1.96*c(-1,1)*selogrr
+```
+
+The 95\% CI based on the Normal approximation for the relative risk is 
+```{r}
+exp(logrr+1.96*c(-1,1)*selogrr)
+```
+
+and the 95\% CI based on the Normal approximation for the treatment efficacy is
+```{r}
+round(1-exp(logrr+1.96*c(1,-1)*selogrr),digits=2)
+```

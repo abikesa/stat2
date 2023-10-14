@@ -1,0 +1,201 @@
+\documentclass[12pt]{article}
+\usepackage{geometry,amsmath,amssymb, graphicx, natbib, float, enumerate}
+\geometry{margin=1in}
+\renewcommand{\familydefault}{cmss}
+\restylefloat{table}
+\restylefloat{figure}
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\logit}{\mathrm{logit}}
+
+\begin{document}
+\noindent
+{\bf BST 140.651 \\ Problem Set 1} \\
+
+\begin{enumerate}[Problem 1.]
+\item Show the following
+\begin{enumerate}[a.]
+\item  $P(\emptyset) = 0$.
+\item  $P(E) = 1 - P(E^c)$.
+\item  If $A \subset B$ then $P(A) \leq P(B)$.
+\item  For any $A$ and $B$, $P(A \cup B) = P(A) + P(B) - P(A \cap B)$.
+\item  $P(A \cup B) = 1 - P(A^c \cap B^c)$.
+\item   $P(A \cap B^c) = P(A) - P(A \cap B)$.
+\item  $P(\cup_{i=1}^n E_i) \leq \sum_{i=1}^n P(E_i)$.
+\item  $P(\cup_{i=1}^n E_i) \geq \max_i P(E_i)$.
+\end{enumerate}
+\item Cryptosporidium is a pathogen that can cause gastrointestinal illness with diarrhea; infections can lead to death in individuals with a weakened
+immune system. During a recent outbreak of cryptosporidiosis in 21\%
+of
+  two parent families at least one of the parents has contracted the
+  disease.  In 9\% of the families the father has contracted
+  cryptosporidiosis while in 5\% of the families both the mother and father
+  have contracted cryptosporidiosis.
+  \begin{enumerate}[a.]
+  \item What event does the probability one minus the probability that
+    both have contracted cryptosporidiosis represent?
+  \item What's the probability that either the mother or the father has contracted
+  cryptosporidiosis?
+  \item What's the probability that the mother has contracted cryptosporidiosis but the father has not?
+  \item What's the probability that the mother has contracted cryptosporidiosis?
+  \item What's the probability that neither the mother nor the father has contracted cryptosporidiosis?
+  \item What's the probability that the mother has contracted cryptosporidiosis but the father has not?
+  \end{enumerate}
+\item Suppose $h(x)$ is such that $h(x) > 0$ for $x=1,2,\ldots,I$.
+  Argue that $ p(x) = h(x) / \sum_{i=1}^I h(i) $ is a valid pmf.
+\item  Suppose a function $h$ is such that $h>0$ and $c = \int_{-\infty}^\infty h(x) dx < \infty$.
+  Show that $f(x) = h(x) / c$ is a valid density.
+\item Suppose that, for a randomly drawn subject from a particular
+  population, the proportion of a their skin that is covered in
+  freckles follows a density that is constant on $[0,1]$. (This is
+  called the {\bf uniform density on $[0,1]$}.) That is, $f(x) = k$ for $0\leq x
+  \leq 1$.
+  \begin{enumerate}[a.]
+  \item Draw this density. What must $k$ be?
+  \item Suppose a random variable, $X$, follows a uniform
+    distribution. What is the probability that $X$ is between .1 and
+    .7? Interpret
+    this probability in the context of the problem.
+  \item Verify the previous calculation in R. What's the probability that $a < X < b$ for
+    generic values $0 < a < b < 1$?
+  \item What is the distribution function associated with this density?
+  \item What is the median of this density? Interpret the median in the context of the problem.
+  \item What is the $95^{th}$ percentile? Interpret this percentile in the context of the problem.
+  \item Do you believe that the proportion of freckles on subjects in a
+    given population could feasibly follow this distribution? (Why or
+    why not.)
+  \end{enumerate}
+\item Let $U$ be a continuous random variable with a uniform density on
+$[0,1]$ and $F(\cdot)$ be any strictly increasing cdf.
+  \begin{enumerate}[a.]
+  \item Show that $F^{-1}(U)$ is a random variable with cdf equal to
+  F.
+  \item Describe a simulation procedure in R that can simulate any
+  iid sample from a distribution with a given cdf $F(\cdot)$
+  \item Simulate $100$ Normal iid variables using only simulations from
+  a uniform distribution and the normal cdf in R
+  \end{enumerate}
+\item Let $0 \leq \pi \leq 1$ and $f_1$ and $f_2$ be two continuous
+  densities with associated distribution functions $F_1$ and $F_2$ and
+  survival functions $S_1$ and $S_2$. Let $g(x) = \pi f_1(x) + (1 - \pi)f_2(x)$.
+    \begin{enumerate}[a.]
+    \item Show that $g$ is a valid density.
+    \item Write the distribution function associated with $g$ in the terms of
+    $F_1$ and $F_2$.
+    \item Write the survival function associated with $g$ in the terms of $S_1$ and $S_2$.
+    \end{enumerate}
+\item  Radiologists have created cancer risk summary that, for a given
+  population of subjects, follows (a specific instance of) the {\bf logistic} density
+  $$
+  \frac{e^{-x}}{(1 + e^{-x})^2} ~~~~~~~\mbox{for}~ -\infty < x < \infty.
+  $$
+  \begin{enumerate}[a.]
+  \item Show that this is a valid density.
+  \item Calculate the distribution function associated with this density.
+  \item What value do you get when you plug $0$ into the distribution function? Interpret this
+    result in the context of the problem.
+  \item Define the {\em odds} an event with probability $p$
+    as $p / (1 - p)$. Prove that the $p^{th}$ quantile from this
+    distribution is $\log\{p / (1 - p)\}$; which is the natural log of
+    the odds of an event with probability $p$.
+  \end{enumerate}
+\item Quality control experts estimate that the time (in years) until a specific electronic
+  part from an assembly line fails follows (a specific instance of) the {\bf Pareto}
+  cdf
+$$
+F(x)=\left\{
+\begin{array}{lll}
+1-\left(\frac{x_0}{x}\right )^\alpha &\mbox{for}& x\geq x_0\\
+0&\mbox{for}& x< x_0 \end{array}\right.
+$$
+The parameter $x_0$ is called the scale parameter, while $\alpha$ is
+the shape or tail index parameter. The distribution is often denoted
+by ${\rm Pa}(x_0,\alpha)$.
+\begin{enumerate}[a.]
+\item Derive the density of the Pareto distribution.
+\item Plot the density and the cdf for $x_0=1,2,5$ and
+$\alpha=0.1,1,10$. Comment on the interpretation.
+\item Generate Pareto random variables using simulated uniform random variables in R.
+\item What is the survival function associated with this density?
+  Interpret a value (say $x=10$ years for $\alpha=1$ and $x_0=2$ ) evaluated in the survival function in the context of the problem.
+\item Find the $p^{th}$ quantile for this density. For $p=.8$ interpret this
+  value in the context of the problem.
+\end{enumerate}
+\item  Suppose that a density is of the form $cx^k$ for some constant $k > 1$ and $0 < x < 1$.
+  \begin{enumerate}[a.]
+  \item Find $c$.
+  \item Find the cdf.
+  \item Derive a formula for the $p^{th}$ quantile from $f$.
+  \item Let $0 \leq a < b \leq 1$. Derive a formula for $P(a < X < b)$.
+  \end{enumerate}
+\item Suppose that the time in days until hospital discharge for a certain patient population
+follows a density $f(x) = c\exp(-x/2.5)$ for $x > 0$.
+\begin{enumerate}[a.]
+    \item What value of $c$ makes this a valid density?
+    \item Find the distribution function for this density.
+    \item Find the survival function.
+    \item Calculate the probability that a person takes longer than 11 days to be discharged.\
+    \item What is the median number of days until discharge?
+\end{enumerate}
+\item The (lower) incomplete gamma function is
+    defined as $\Gamma(k, c) = \int_{0}^c x^{k-1}\exp(-x)dx$.
+    By convention $\Gamma(k, \infty)$, the complete gamma function, is written $\Gamma(k)$.
+    Consider a density
+    $$
+    \frac{1}{\Gamma(\alpha)} x^{\alpha - 1} \exp(-x) ~~ \mbox{for} ~~ x > 0
+    $$
+    where $\alpha$ is a known number.
+    \begin{enumerate}[a.]
+    \item Argue that this is a valid density.
+    \item Write out the survival function associated with this density using gamma functions
+    \item Let $\beta$ be a known number; argue that
+    $$
+    \frac{1}{\beta^\alpha\Gamma(\alpha)} x^{\alpha - 1} \exp(-x/\beta) ~~ \mbox{for} ~~ x > 0
+    $$
+    is a valid density. This is known as the {\bf gamma density}.
+    \item Plot the Gamma density for different values of $\alpha$ and $\beta$.
+    \end{enumerate}
+\item The {\bf Weibull density} is useful in survival analysis. Its form is given by
+$$
+\frac{\gamma}{\beta}x^{\gamma - 1}\exp\left(-x^\gamma / \beta\right),
+$$
+for $x > 0$ and $\gamma$ and $\beta$ are fixed known numbers.
+\begin{enumerate}[a.]
+    \item Demonstrate that the Weibull density is a valid density.
+    \item Calculate the survival function associated with the Weibull density.
+    \item Calculate the median of the Weibull density.
+    \item Plot the Weibull density for different values of $\gamma$ and $\beta$.
+\end{enumerate}
+\item The Beta function is given by $B(\alpha, \beta) =  \int_0^1 x^{\alpha-1} (1 - x)^{\beta - 1}$
+for $\alpha > 0$ and $\beta > 0$ . It turns out that
+$$
+B(\alpha, \beta) = \Gamma(\alpha)\Gamma(\beta)/\Gamma(\alpha + \beta).
+$$
+The {\bf Beta density} is given by $\frac{1}{B(\alpha,\beta)}x^{\alpha-1}(1 - x)^{\beta-1}$ for fixed
+$\alpha > 0$ and $\beta > 0$. This density is useful for
+\begin{enumerate}[a.]
+\item Argue that the Beta density is a valid density.
+\item Argue that the uniform density is a special case of the beta density.
+\item Plot the beta density for different values of $\alpha$ and $\beta$.
+\end{enumerate}
+\item A famous formula is $e^{\lambda} = \sum_{x=0}^\infty \frac{\lambda^{x}}{x!}$ for any value
+    of $\lambda$. Assume that the count of the number of people infected
+with a particular disease per year follows a mass function given by
+$$
+P(X = x) = \frac{e^{-\lambda} \lambda^x}{x!} ~~ \mbox{for} ~~ x = 0, 1, 2, 3, \ldots
+$$
+where $\lambda$ is a fixed known number. (This is know as the {\bf Poisson mass function}.)
+\begin{enumerate}[a.]
+\item Argue that $\sum_{x=0}^\infty P(X = x) = 1$.
+\end{enumerate}
+\item Consider counting the number of coin flips from an unfair coin with success probability $p$ until a head is obtained, say $X$. The mass
+function for this process is given by $P(X = x) = p(1 - p)^{x-1}$ for $x = 1, 2, 3, \ldots$.
+This is called the {\bf geometric mass function}.
+\begin{enumerate}[a.]
+\item Argue mathematically that this is a valid probability mass function. Hint, the geometric series is given by $\frac{1}{1-r} = \sum_{k=0}^\infty r^k$ for $|r| < 1$.
+\item Calculate the survival distribution $P(X > x)$ for the geometric distribution for
+integer values of $x$.
+\end{enumerate}
+\end{enumerate}
+\end{document}
