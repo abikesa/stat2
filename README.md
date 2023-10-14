@@ -1,2 +1,2 @@
-# stats2
-bio2stats2
+# stats
+bio2stat2
